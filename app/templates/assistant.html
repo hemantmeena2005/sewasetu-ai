@@ -489,6 +489,7 @@
             '<div style="font-size:14px;"><strong>' + (isHindi ? 'प्रशासनिक ब्लॉक:' : 'Block:') + '</strong> ' + (data.block || 'N/A') + '</div>' +
             '<div style="font-size:14px;"><strong>' + (isHindi ? 'आवेदन दिनांक:' : 'Submitted Date:') + '</strong> ' + (data.submission_date || data.submitted_date || 'N/A') + '</div>' +
             (data.decided_by ? '<div style="font-size:14px;"><strong>' + (isHindi ? 'अधिकारी निर्णय:' : 'Decision By:') + '</strong> ' + data.decided_by + '</div>' : '') +
+            (data.decision_note ? '<div style="font-size:14px; margin-top:6px; padding:6px 10px; background:rgba(0,0,0,0.04); border-radius:6px; border-left:3px solid ' + statusColor + ';"><strong>' + (isHindi ? 'अधिकारी टिप्पणी / नोट:' : 'Officer Remarks / Note:') + '</strong> <em>"' + data.decision_note + '"</em></div>' : '') +
             (data.within_sla ? '<div style="margin-top:6px; font-size:13px; color:#15803d; font-weight:600;">✓ 15-Day Statutory RTPS SLA Active</div>' : '') +
             '</div>';
           appendMessage('bot', out);

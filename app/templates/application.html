@@ -61,6 +61,15 @@
     <th scope="row">Decided At</th>
     <td>{{ a[10] or 'Awaiting Departmental Review' }}</td>
   </tr>
+  {% if decision_note %}
+  <tr>
+    <th scope="row">Officer Remarks / Note</th>
+    <td>
+      <strong style="color:var(--primary); font-size:16px;">"{{ decision_note }}"</strong>
+      {% if decided_by %}<span class="note" style="margin-left:8px;">(Recorded by {{ decided_by }})</span>{% endif %}
+    </td>
+  </tr>
+  {% endif %}
 </table>
 
 <div style="display:flex; gap:16px; margin:24px 0; flex-wrap:wrap;">

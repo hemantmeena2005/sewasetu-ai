@@ -486,14 +486,19 @@ def view_application(app_id):
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT application_no, applicant_name, mobile, dob, village, block, "
-                "bank_account, ifsc, status, submitted_at, decided_at "
+                "bank_account, ifsc, status, submitted_at, decided_at, decided_by "
                 "FROM applications WHERE id = %s AND mobile = %s",
                 (app_id, session.get("portal_mobile")))
     row = cur.fetchone()
-    cur.close(); conn.close()
     if not row:
+        cur.close(); conn.close()
         abort(404)
-    return render_template("application.html", a=row, app_id=app_id)
+    cur.execute("SELECT note, actor FROM audit_log WHERE application_id = %s AND action IN ('APPROVED', 'REJECTED', 'DEEMED_APPROVED') ORDER BY at DESC LIMIT 1", (app_id,))
+    audit_row = cur.fetchone()
+    decision_note = audit_row[0] if audit_row else None
+    decided_by = row[11] or (audit_row[1] if audit_row else None)
+    cur.close(); conn.close()
+    return render_template("application.html", a=row, app_id=app_id, decision_note=decision_note, decided_by=decided_by)
 
 
 @app.route("/application/<int:app_id>/withdraw", methods=["POST"])
@@ -1026,12 +1031,19 @@ def api_application_status():
             (application_no,)
         )
         row = cur.fetchone()
-        cur.close()
-        conn.close()
         if row:
             submitted_dt = row[5]
             days_pending = (services.now_ist() - submitted_dt).days if submitted_dt and row[3] == "PENDING" else None
             within_sla = (days_pending is None or days_pending <= services.SLA_DAYS)
+            cur.execute(
+                "SELECT note, actor FROM audit_log WHERE application_id = %s AND action IN ('APPROVED', 'REJECTED', 'DEEMED_APPROVED') ORDER BY at DESC LIMIT 1",
+                (row[0],)
+            )
+            audit_row = cur.fetchone()
+            decision_note = audit_row[0] if audit_row else None
+            decided_by = row[7] or (audit_row[1] if audit_row else None)
+            cur.close()
+            conn.close()
             return jsonify({
                 "success": True,
                 "found": True,
@@ -1042,10 +1054,13 @@ def api_application_status():
                 "submission_date": str(row[5])[:10] if row[5] else None,
                 "submitted_date": str(row[5])[:10] if row[5] else None,
                 "decided_at": str(row[6]) if row[6] else None,
-                "decided_by": row[7],
+                "decided_by": decided_by,
+                "decision_note": decision_note,
                 "within_sla": within_sla,
                 "message": f"Application {row[1]} is currently {row[3]}."
             })
+        cur.close()
+        conn.close()
         return jsonify({
             "success": False,
             "found": False,
