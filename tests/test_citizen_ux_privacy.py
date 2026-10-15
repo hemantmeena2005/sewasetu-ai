@@ -316,6 +316,117 @@ class TestCitizenUXAndPrivacy(unittest.TestCase):
         self.assertIn(b"PENDING", portal_res.data)
         self.assertIn(b"Tapeswari Borah", portal_res.data)
 
+    # -----------------------------------------------------------------------
+    # 10. Status Login by OTP & Forgot Password Flow
+    # -----------------------------------------------------------------------
+    def test_status_login_by_otp_and_forgot_password_flow(self):
+        # Create an application for test applicant
+        mobile = "9876500099"
+        conn = services.get_db()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM portal_users WHERE mobile = %s;", (mobile,))
+        cur.execute("DELETE FROM otps WHERE mobile = %s;", (mobile,))
+        cur.execute("DELETE FROM applications WHERE mobile = %s;", (mobile,))
+        conn.commit()
+        cur.close(); conn.close()
+
+        res = services.submit_application(
+            mobile,
+            {
+                "applicant_name": "Bhaben Kalita",
+                "dob": "12/03/1955",
+                "village": "Dihingia",
+                "block": "Sonari",
+                "bank_account": "918273645012",
+                "ifsc": "SBIN0001234",
+            },
+            doc_path="/tmp/proof.pdf",
+            is_ai=False
+        )
+        self.assertTrue(res["success"])
+        app_id = res["application_id"]
+
+        # 1. GET /status contains both password and OTP login options
+        r_get = self.client.get("/status")
+        self.assertEqual(r_get.status_code, 200)
+        self.assertIn(b"login_mode_otp", r_get.data) if b"login_mode_otp" in r_get.data else self.assertIn("OTP".encode(), r_get.data)
+
+        # 2. OTP Login: Request OTP via POST /status
+        r_otp_send = self.client.post("/status", data={
+            "login_mode": "otp",
+            "action": "send_otp",
+            "otp_mobile": mobile
+        })
+        self.assertEqual(r_otp_send.status_code, 200)
+        self.assertIn(b"OTP successfully sent", r_otp_send.data)
+
+        # Get latest OTP from DB
+        conn = services.get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT code FROM otps WHERE mobile = %s ORDER BY id DESC LIMIT 1;", (mobile,))
+        otp_code = cur.fetchone()[0]
+        cur.close(); conn.close()
+        self.assertEqual(len(otp_code), 6)
+
+        # 3. OTP Login: Verify OTP and log in
+        r_otp_login = self.client.post("/status", data={
+            "login_mode": "otp",
+            "action": "verify_otp",
+            "otp_mobile": mobile,
+            "otp": otp_code
+        }, follow_redirects=True)
+        self.assertEqual(r_otp_login.status_code, 200)
+        self.assertIn(b"Bhaben Kalita", r_otp_login.data)
+        self.assertIn(b"Dihingia", r_otp_login.data)
+
+        # 4. Forgot Password Flow: GET /status/reset
+        r_reset_get = self.client.get("/status/reset")
+        self.assertEqual(r_reset_get.status_code, 200)
+        self.assertIn(b"15081954", r_reset_get.data)
+
+        # 5. Forgot Password: non-existent mobile gives clear guidance
+        r_nonexist = self.client.post("/status/reset", data={
+            "action": "request_otp",
+            "mobile": "9999999999"
+        })
+        self.assertIn(b"No pension application", r_nonexist.data)
+
+        # 6. Forgot Password: valid mobile requests OTP
+        r_reset_req = self.client.post("/status/reset", data={
+            "action": "request_otp",
+            "mobile": mobile
+        })
+        self.assertEqual(r_reset_req.status_code, 200)
+        self.assertIn(b"A 6-digit OTP has been sent", r_reset_req.data)
+
+        # Get latest reset OTP
+        conn = services.get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT code FROM otps WHERE mobile = %s ORDER BY id DESC LIMIT 1;", (mobile,))
+        reset_otp = cur.fetchone()[0]
+        cur.close(); conn.close()
+
+        # 7. Forgot Password: confirm reset with new password
+        r_reset_confirm = self.client.post("/status/reset", data={
+            "action": "confirm_reset",
+            "mobile": mobile,
+            "otp": reset_otp,
+            "new_password": "MySecretPass99",
+            "confirm_password": "MySecretPass99"
+        }, follow_redirects=True)
+        self.assertEqual(r_reset_confirm.status_code, 200)
+        self.assertIn(b"Bhaben Kalita", r_reset_confirm.data)
+
+        # 8. Verify the citizen can now log in using the new password
+        self.client.get("/logout")
+        r_pwd_login = self.client.post("/status", data={
+            "mobile": mobile,
+            "password": "MySecretPass99"
+        }, follow_redirects=True)
+        self.assertEqual(r_pwd_login.status_code, 200)
+        self.assertIn(b"Bhaben Kalita", r_pwd_login.data)
+
 
 if __name__ == "__main__":
     unittest.main()
+

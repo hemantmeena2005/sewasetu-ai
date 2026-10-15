@@ -11,6 +11,7 @@ import os
 import re
 import random
 import hashlib
+import secrets
 import configparser
 from datetime import datetime, date, timedelta
 from zoneinfo import ZoneInfo
@@ -1253,3 +1254,53 @@ def process_deemed_approvals(batch_size=500, actor="system:rtps-auto", correlati
         "error_count": len(errors),
         "errors": errors
     }
+
+
+def send_otp_for_mobile(mobile: str) -> dict:
+    """Validate 10-digit mobile, generate 6-digit OTP, record in DB, and send SMS."""
+    clean = re.sub(r"[\s-]", "", mobile or "")
+    if len(clean) != 10 or not clean.isdigit():
+        return {"success": False, "error": "Please enter a valid 10-digit mobile number."}
+
+    code = f"{secrets.randbelow(1000000):06d}"
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "INSERT INTO otps (mobile, code, created_at) VALUES (%s, %s, %s)",
+        (clean, code, datetime.now())
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    send_sms(clean, f"Your Sewa Setu OTP is {code}. Valid for 5 minutes.")
+    return {"success": True, "mobile": clean, "code": code}
+
+
+def verify_mobile_otp_code(mobile: str, otp: str, max_age_seconds: int = 300) -> dict:
+    """Verify 6-digit OTP for a mobile number against otps table."""
+    clean_mobile = re.sub(r"[\s-]", "", mobile or "")
+    clean_otp = (otp or "").strip()
+    if len(clean_mobile) != 10 or not clean_mobile.isdigit():
+        return {"valid": False, "error": "Invalid 10-digit mobile number."}
+    if not clean_otp or len(clean_otp) != 6 or not clean_otp.isdigit():
+        return {"valid": False, "error": "Please enter a valid 6-digit OTP code."}
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT code, created_at FROM otps WHERE mobile = %s ORDER BY id DESC LIMIT 1",
+        (clean_mobile,)
+    )
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not row or not secrets.compare_digest(row[0], clean_otp):
+        return {"valid": False, "error": "Incorrect OTP code. Please try again."}
+
+    age = (datetime.now() - row[1]).total_seconds()
+    if age > max_age_seconds:
+        return {"valid": False, "error": "OTP has expired. Please request a new OTP."}
+
+    return {"valid": True, "mobile": clean_mobile}

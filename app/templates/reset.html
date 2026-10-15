@@ -1,9 +1,105 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Reset Password</h2>
-<form method="post">
-  <label>Registered Mobile Number</label>
-  <input type="text" name="mobile">
-  <p><button class="btn" type="submit">Reset Password</button></p>
-</form>
+<div style="max-width:680px; margin:0 auto;">
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+    <h2 style="margin:0; font-size:26px; color:var(--primary);">{{ t('reset_heading') }}</h2>
+  </div>
+  <p class="note" style="font-size:15px; margin-bottom:20px;">
+    {{ t('reset_sub') }}
+  </p>
+
+  <!-- Helpful notice about the official default password -->
+  <div style="background:var(--accent-light); border-left:4px solid var(--accent); padding:14px 18px; border-radius:0 8px 8px 0; margin-bottom:24px; font-size:15px; line-height:1.5;">
+    💡 <strong>Default Portal Password Reminder:</strong><br>
+    {{ t('default_pwd_info') }}<br>
+    <span style="font-size:14px; color:var(--text-muted); margin-top:4px; display:inline-block;">
+      If you already know your Date of Birth, you do not need to reset your password — you can <a href="/status{% if mobile %}?mobile={{ mobile }}{% endif %}" style="color:var(--primary); font-weight:600; text-decoration:underline;">Log in directly</a>.
+    </span>
+  </div>
+
+  {% if step == 2 or otp_sent %}
+    <!-- ========================================== -->
+    <!-- STEP 2: Verify OTP & Choose / Reset Password -->
+    <!-- ========================================== -->
+    {% if demo_otp %}
+    <div class="helper-box" style="margin-bottom:20px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; border-radius:8px; padding:12px 16px;">
+      🔑 <strong>Test / Demo OTP:</strong> <span style="font-size:20px; font-weight:800; letter-spacing:3px; font-family:monospace; margin-left:6px;">{{ demo_otp }}</span>
+      <div style="font-size:12px; color:#3b82f6; margin-top:4px;">(Generated for test / SMS inspection. Valid for 5 minutes.)</div>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/status/reset">
+      <input type="hidden" name="mobile" value="{{ mobile }}">
+
+      <div style="margin-bottom:18px;">
+        <label>Registered Mobile Number</label>
+        <input type="text" value="{{ mobile }}" disabled style="background:#f1f5f9; color:#475569; font-weight:600;">
+      </div>
+
+      <div style="margin-bottom:22px; background:#f8fafc; padding:18px; border-radius:8px; border:1px solid var(--border-color);">
+        <label for="reset_otp">Enter 6-Digit OTP <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="reset_otp" name="otp" maxlength="6" inputmode="numeric" placeholder="123456" required autocomplete="one-time-code" style="max-width:220px; font-size:22px; font-weight:700; letter-spacing:4px; text-align:center;">
+        <p class="note" style="margin-top:8px;">A 6-digit verification code was sent to mobile number {{ mobile }}.</p>
+      </div>
+
+      <div style="border-top:1px dashed var(--border-color); padding-top:20px; margin-bottom:22px;">
+        <h4 style="margin:0 0 12px 0; font-size:16px; color:var(--text-dark);">Choose Your New Password:</h4>
+        
+        <div style="margin-bottom:16px;">
+          <label for="new_password">{{ t('new_password_label') }}</label>
+          <input type="password" id="new_password" name="new_password" maxlength="32" placeholder="e.g. MySecretPass123 or leave blank">
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label for="confirm_password">{{ t('confirm_password_label') }}</label>
+          <input type="password" id="confirm_password" name="confirm_password" maxlength="32" placeholder="Re-enter new password">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:20px;">
+        <button class="btn" type="submit" name="action" value="confirm_reset">
+          {{ t('set_new_password_btn') }} &rarr;
+        </button>
+        <button class="btn btn-secondary" type="submit" name="action" value="reset_to_dob" formnovalidate>
+          🔄 {{ t('reset_to_dob_btn') }}
+        </button>
+      </div>
+
+      <div style="font-size:14px; margin-top:12px;">
+        Didn't receive the OTP? <a href="/status/reset?mobile={{ mobile }}" style="color:var(--primary); text-decoration:underline;">Resend OTP</a> or <a href="/status/reset" style="color:var(--primary); text-decoration:underline;">change mobile number</a>.
+      </div>
+    </form>
+
+  {% else %}
+    <!-- ========================================== -->
+    <!-- STEP 1: Enter Mobile to Request OTP        -->
+    <!-- ========================================== -->
+    <form method="post" action="/status/reset">
+      <input type="hidden" name="action" value="request_otp">
+
+      <div style="margin-bottom:24px;">
+        <label for="reset_mobile">{{ t('status_mobile_label') }} <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="reset_mobile" name="mobile" value="{{ mobile }}" maxlength="10" inputmode="numeric" placeholder="e.g. 9876543210" required autocomplete="tel">
+        <p class="note">Enter the 10-digit mobile number used during your pension application submission.</p>
+      </div>
+
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <button class="btn" type="submit" id="btn-request-reset-otp">{{ t('send_otp_btn') }} &rarr;</button>
+        <a href="/status{% if mobile %}?mobile={{ mobile }}{% endif %}" class="btn btn-secondary" style="font-size:15px;">
+          &larr; {{ t('back_to_login') }}
+        </a>
+      </div>
+    </form>
+  {% endif %}
+
+  <!-- Extra Info / Direct Link to Apply -->
+  <div style="margin-top:36px; padding-top:24px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div style="font-size:14px; color:var(--text-muted);">
+      Need to submit a fresh pension application?
+    </div>
+    <a href="/apply" class="btn btn-secondary" style="font-size:14px; padding:8px 16px;">
+      Apply for Pension &rarr;
+    </a>
+  </div>
+</div>
 {% endblock %}

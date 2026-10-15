@@ -1,23 +1,142 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{{ t('status_heading') }}</h2>
-<p class="note" style="font-size:16px;">{{ t('status_dob_help') }}</p>
+<div style="max-width:680px; margin:0 auto;">
+  <h2 style="margin-top:0; margin-bottom:8px; font-size:26px; color:var(--primary);">{{ t('status_heading') }}</h2>
+  <p class="note" style="font-size:15px; margin-bottom:24px;">Track your Old Age Pension application progress, check officer review notes, or download official acknowledgments.</p>
 
-<form method="post" action="/status">
-  <div style="margin-bottom:18px;">
-    <label for="status_mobile">{{ t('status_mobile_label') }} <span style="color:var(--danger)">*</span></label>
-    <input type="text" id="status_mobile" name="mobile" maxlength="10" inputmode="numeric" placeholder="e.g. 9876543210" required autocomplete="username">
+  <!-- Login Mode Switcher Tabs -->
+  <div style="display:flex; border-bottom:2px solid var(--border-color); margin-bottom:24px; gap:8px;">
+    <button type="button" id="tab-btn-password" onclick="switchLoginTab('password')"
+            style="flex:1; padding:12px 16px; font-size:16px; font-weight:700; border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s;"
+            class="{% if active_tab != 'otp' %}active-tab-style{% endif %}">
+      🔑 {{ t('login_mode_password') }}
+    </button>
+    <button type="button" id="tab-btn-otp" onclick="switchLoginTab('otp')"
+            style="flex:1; padding:12px 16px; font-size:16px; font-weight:700; border:none; background:transparent; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.2s;"
+            class="{% if active_tab == 'otp' %}active-tab-style{% endif %}">
+      📲 {{ t('login_mode_otp') }}
+    </button>
   </div>
 
-  <div style="margin-bottom:24px;">
-    <label for="status_password">{{ t('status_dob_label') }} <span style="color:var(--danger)">*</span></label>
-    <input type="password" id="status_password" name="password" maxlength="8" placeholder="DDMMYYYY" required autocomplete="current-password">
-    <p class="note">{{ t('status_dob_help') }}</p>
+  <style>
+    .active-tab-style {
+      color: var(--primary) !important;
+      border-bottom-color: var(--primary) !important;
+      background: rgba(11, 61, 110, 0.04) !important;
+      border-radius: 6px 6px 0 0;
+    }
+  </style>
+
+  <!-- ========================================== -->
+  <!-- TAB 1: Password / Date of Birth Login      -->
+  <!-- ========================================== -->
+  <div id="tab-content-password" style="display:{% if active_tab == 'otp' %}none{% else %}block{% endif %};">
+    <div style="background:var(--accent-light); border-left:4px solid var(--accent); padding:12px 16px; border-radius:0 8px 8px 0; margin-bottom:20px; font-size:14px;">
+      💡 <strong>Default Password Notice:</strong> {{ t('status_dob_help') }}
+    </div>
+
+    <form method="post" action="/status" id="password-login-form">
+      <input type="hidden" name="login_mode" value="password">
+      <div style="margin-bottom:18px;">
+        <label for="status_mobile">{{ t('status_mobile_label') }} <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="status_mobile" name="mobile" value="{{ mobile if active_tab != 'otp' else '' }}" maxlength="10" inputmode="numeric" placeholder="e.g. 9876543210" required autocomplete="username">
+      </div>
+
+      <div style="margin-bottom:24px;">
+        <label for="status_password">{{ t('status_dob_label') }} <span style="color:var(--danger)">*</span></label>
+        <input type="password" id="status_password" name="password" maxlength="20" placeholder="DDMMYYYY (e.g. 15081954)" required autocomplete="current-password">
+        <p class="note">{{ t('status_dob_help') }}</p>
+      </div>
+
+      <div style="display:flex; gap:16px; align-items:center; justify-content:space-between; flex-wrap:wrap;">
+        <button class="btn" type="submit" id="btn-login-pwd">{{ t('check_status_btn') }} &rarr;</button>
+        <a href="/status/reset{% if mobile %}?mobile={{ mobile }}{% endif %}" class="note" style="color:var(--primary); font-weight:600; text-decoration:underline;">
+          {{ t('forgot_password_link') }}
+        </a>
+      </div>
+    </form>
   </div>
 
-  <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-    <button class="btn" type="submit">{{ t('check_status_btn') }} &rarr;</button>
-    <a href="/status/reset" class="note" style="text-decoration:underline;">Forgot password?</a>
+  <!-- ========================================== -->
+  <!-- TAB 2: OTP (One-Time Password) Login        -->
+  <!-- ========================================== -->
+  <div id="tab-content-otp" style="display:{% if active_tab == 'otp' %}block{% else %}none{% endif %};">
+    <p class="note" style="font-size:15px; margin-bottom:20px;">
+      {{ t('login_otp_help') }}
+    </p>
+
+    {% if demo_otp %}
+    <div class="helper-box" style="margin-bottom:18px; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; border-radius:8px; padding:12px 16px;">
+      🔑 <strong>Test / Demo OTP:</strong> <span style="font-size:20px; font-weight:800; letter-spacing:3px; font-family:monospace; margin-left:6px;">{{ demo_otp }}</span>
+      <div style="font-size:12px; color:#3b82f6; margin-top:4px;">(Generated for SMS gateway demonstration. Valid for 5 minutes.)</div>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/status" id="otp-login-form">
+      <input type="hidden" name="login_mode" value="otp">
+
+      <div style="margin-bottom:18px;">
+        <label for="otp_mobile">{{ t('status_mobile_label') }} <span style="color:var(--danger)">*</span></label>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <input type="text" id="otp_mobile" name="otp_mobile" value="{{ mobile if mobile else '' }}" maxlength="10" inputmode="numeric" placeholder="e.g. 9876543210" required autocomplete="tel" style="flex:1; min-width:200px;">
+          <button type="submit" name="action" value="send_otp" class="btn btn-secondary" style="padding:10px 18px; font-size:15px; white-space:nowrap;">
+            {% if otp_sent %}{{ t('resend_otp_btn') }}{% else %}{{ t('send_otp_btn') }}{% endif %}
+          </button>
+        </div>
+      </div>
+
+      {% if otp_sent %}
+      <div style="margin-bottom:24px; background:#f8fafc; padding:18px; border-radius:8px; border:1px solid var(--border-color);">
+        <label for="status_otp_code">Enter 6-Digit OTP <span style="color:var(--danger)">*</span></label>
+        <input type="text" id="status_otp_code" name="otp" maxlength="6" inputmode="numeric" placeholder="123456" required autocomplete="one-time-code" style="max-width:220px; font-size:22px; font-weight:700; letter-spacing:4px; text-align:center;">
+        <p class="note" style="margin-top:8px;">A 6-digit code was sent to mobile number {{ mobile }}. Valid for 5 minutes.</p>
+      </div>
+
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <button class="btn" type="submit" name="action" value="verify_otp">{{ t('login_otp_btn') }} &rarr;</button>
+        <button type="submit" name="action" value="send_otp" class="btn btn-secondary" style="font-size:14px;">{{ t('resend_otp_btn') }}</button>
+      </div>
+      {% endif %}
+    </form>
   </div>
-</form>
+
+  <!-- Help & Alternative Actions -->
+  <div style="margin-top:36px; padding-top:24px; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;">
+    <div style="font-size:14px; color:var(--text-muted);">
+      Haven't submitted an application yet?
+    </div>
+    <a href="/apply" class="btn btn-secondary" style="font-size:14px; padding:8px 16px;">
+      Apply for Pension &rarr;
+    </a>
+  </div>
+</div>
+
+<script>
+  function switchLoginTab(tab) {
+    var pwdTab = document.getElementById('tab-content-password');
+    var otpTab = document.getElementById('tab-content-otp');
+    var btnPwd = document.getElementById('tab-btn-password');
+    var btnOtp = document.getElementById('tab-btn-otp');
+
+    if (tab === 'otp') {
+      pwdTab.style.display = 'none';
+      otpTab.style.display = 'block';
+      btnPwd.classList.remove('active-tab-style');
+      btnOtp.classList.add('active-tab-style');
+      var m = document.getElementById('status_mobile').value;
+      if (m && !document.getElementById('otp_mobile').value) {
+        document.getElementById('otp_mobile').value = m;
+      }
+    } else {
+      otpTab.style.display = 'none';
+      pwdTab.style.display = 'block';
+      btnOtp.classList.remove('active-tab-style');
+      btnPwd.classList.add('active-tab-style');
+      var om = document.getElementById('otp_mobile').value;
+      if (om && !document.getElementById('status_mobile').value) {
+        document.getElementById('status_mobile').value = om;
+      }
+    }
+  }
+</script>
 {% endblock %}

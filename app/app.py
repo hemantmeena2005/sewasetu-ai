@@ -452,30 +452,148 @@ def generate_acknowledgment(cur, app_id):
 
 @app.route("/status", methods=["GET", "POST"])
 def status_login():
+    active_tab = request.args.get("mode", "password")
+    mobile = (request.args.get("mobile") or "").strip()
+    otp_sent = False
+    demo_otp = None
+
     if request.method == "POST":
-        mobile = request.form.get("mobile", "").strip()
-        password = request.form.get("password", "")
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("SELECT password_hash FROM portal_users WHERE mobile = %s", (mobile,))
-        row = cur.fetchone()
-        cur.close(); conn.close()
-        if row and row[0] == hash_password(password):
-            session["logged_in"] = True
-            session["portal_mobile"] = mobile
+        login_mode = request.form.get("login_mode", "")
+        # OTP Login branch
+        if login_mode == "otp" or request.form.get("otp_mobile") or (request.form.get("action") in ("send_otp", "verify_otp")):
+            active_tab = "otp"
+            mobile = (request.form.get("otp_mobile") or request.form.get("mobile") or "").strip()
+            action = request.form.get("action", "")
+            otp_code = request.form.get("otp", "").strip()
+
+            # Action 1: Send OTP
+            if action == "send_otp" or not otp_code:
+                if len(mobile) != 10 or not mobile.isdigit():
+                    flash("Please enter a valid 10-digit registered mobile number.")
+                    return render_template("status_login.html", active_tab="otp", mobile=mobile)
+
+                conn = get_db()
+                cur = conn.cursor()
+                cur.execute("SELECT id FROM applications WHERE mobile = %s LIMIT 1", (mobile,))
+                has_app = cur.fetchone()
+                cur.execute("SELECT mobile FROM portal_users WHERE mobile = %s LIMIT 1", (mobile,))
+                has_user = cur.fetchone()
+                cur.close(); conn.close()
+
+                if not has_app and not has_user:
+                    flash("No pension application found for mobile number %s. If you are a new applicant, please Apply for Pension." % mobile)
+                    return render_template("status_login.html", active_tab="otp", mobile=mobile, not_found=True)
+
+                res = services.send_otp_for_mobile(mobile)
+                if res.get("success"):
+                    flash("OTP successfully sent to %s. Valid for 5 minutes." % mobile)
+                    return render_template("status_login.html", active_tab="otp", mobile=mobile, otp_sent=True, demo_otp=res.get("code"))
+                else:
+                    flash(res.get("error", "Failed to send OTP."))
+                    return render_template("status_login.html", active_tab="otp", mobile=mobile)
+
+            # Action 2: Verify OTP and log in
+            else:
+                v = services.verify_mobile_otp_code(mobile, otp_code)
+                if not v.get("valid"):
+                    flash(v.get("error", "Invalid or expired OTP."))
+                    return render_template("status_login.html", active_tab="otp", mobile=mobile, otp_sent=True)
+
+                conn = get_db()
+                cur = conn.cursor()
+                cur.execute("SELECT id, dob FROM applications WHERE mobile = %s ORDER BY submitted_at DESC LIMIT 1", (mobile,))
+                r = cur.fetchone()
+                if r:
+                    # Self-heal portal_users record if missing
+                    cur.execute("SELECT count(*) FROM portal_users WHERE mobile = %s", (mobile,))
+                    if cur.fetchone()[0] == 0 and r[1]:
+                        cur.execute("INSERT INTO portal_users (mobile, password_hash) VALUES (%s, %s)",
+                                    (mobile, hash_password(r[1].strftime("%d%m%Y"))))
+                        conn.commit()
+                    cur.close(); conn.close()
+                    session["logged_in"] = True
+                    session["portal_mobile"] = mobile
+                    return redirect(url_for("view_application", app_id=r[0]))
+
+                cur.close(); conn.close()
+                flash("Mobile number verified, but no pension application was found.")
+                return redirect(url_for("status_login"))
+
+        # Password Login branch (default / backward compatible)
+        else:
+            active_tab = "password"
+            mobile = (request.form.get("mobile") or "").strip()
+            password = request.form.get("password", "")
             conn = get_db()
             cur = conn.cursor()
-            cur.execute("SELECT id FROM applications WHERE mobile = %s "
-                        "ORDER BY submitted_at DESC LIMIT 1", (mobile,))
-            r = cur.fetchone()
+            cur.execute("SELECT password_hash FROM portal_users WHERE mobile = %s", (mobile,))
+            row = cur.fetchone()
+            authenticated = False
+
+            if row and row[0] == hash_password(password):
+                authenticated = True
+            else:
+                # Also allow matching DOB from application as self-healing password
+                cur.execute("SELECT dob FROM applications WHERE mobile = %s ORDER BY submitted_at DESC LIMIT 1", (mobile,))
+                app_row = cur.fetchone()
+                if app_row and app_row[0] and (app_row[0].strftime("%d%m%Y") == password.strip()):
+                    authenticated = True
+                    cur.execute("INSERT INTO portal_users (mobile, password_hash) VALUES (%s, %s) "
+                                "ON CONFLICT (mobile) DO UPDATE SET password_hash = EXCLUDED.password_hash",
+                                (mobile, hash_password(password.strip())))
+                    conn.commit()
+
+            if authenticated:
+                session["logged_in"] = True
+                session["portal_mobile"] = mobile
+                cur.execute("SELECT id FROM applications WHERE mobile = %s ORDER BY submitted_at DESC LIMIT 1", (mobile,))
+                r = cur.fetchone()
+                cur.close(); conn.close()
+                if r:
+                    return redirect(url_for("view_application", app_id=r[0]))
+                flash("No application found for this mobile number.")
+                return redirect(url_for("status_login"))
+
             cur.close(); conn.close()
-            if r:
-                return redirect(url_for("view_application", app_id=r[0]))
-            flash("No application found for this mobile number.")
-            return redirect(url_for("status_login"))
-        flash("Mobile number or password is incorrect. The password is your date of "
-              "birth as DDMMYYYY.")
-    return render_template("status_login.html")
+            flash("Mobile number or password is incorrect. The password is your date of birth as DDMMYYYY.")
+            return render_template("status_login.html", active_tab="password", mobile=mobile)
+
+    return render_template("status_login.html", active_tab=active_tab, mobile=mobile, otp_sent=otp_sent, demo_otp=demo_otp)
+
+
+@app.route("/api/status/send-otp", methods=["POST"])
+def api_status_send_otp():
+    """Asynchronous OTP trigger for Citizen Status Portal OTP Login & Password Reset."""
+    data = request.get_json(silent=True) or request.form
+    mobile = (data.get("mobile") or "").strip()
+    if len(mobile) != 10 or not mobile.isdigit():
+        return jsonify({"success": False, "error": "Please enter a valid 10-digit mobile number."}), 400
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT applicant_name FROM applications WHERE mobile = %s ORDER BY submitted_at DESC LIMIT 1", (mobile,))
+    app_row = cur.fetchone()
+    cur.execute("SELECT mobile FROM portal_users WHERE mobile = %s", (mobile,))
+    user_row = cur.fetchone()
+    cur.close(); conn.close()
+
+    if not app_row and not user_row:
+        return jsonify({
+            "success": False,
+            "not_found": True,
+            "error": "No pension application found for mobile number %s. Please check your number or apply for pension." % mobile
+        }), 404
+
+    res = services.send_otp_for_mobile(mobile)
+    if res.get("success"):
+        return jsonify({
+            "success": True,
+            "mobile": mobile,
+            "code": res.get("code"),
+            "message": "OTP sent successfully to %s. Valid for 5 minutes." % mobile
+        })
+    return jsonify({"success": False, "error": res.get("error", "Failed to send OTP.")}), 500
+
 
 
 @app.route("/application/<int:app_id>")
@@ -542,26 +660,94 @@ def ack_pdf(app_id):
 
 @app.route("/status/reset", methods=["GET", "POST"])
 def reset_password():
+    mobile = (request.args.get("mobile") or request.form.get("mobile") or "").strip()
+    step = 1
+    otp_sent = False
+    demo_otp = None
+
     if request.method == "POST":
-        mobile = request.form.get("mobile", "")
-        conn = get_db()
-        cur = conn.cursor()
-        # fetch account for reset
-        cur.execute("SELECT mobile FROM portal_users WHERE mobile = %s", (mobile,))
-        row = cur.fetchone()
-        if row:
-            cur.execute("SELECT dob FROM applications WHERE mobile = %s LIMIT 1", (mobile,))
-            r2 = cur.fetchone()
-            if r2:
-                newpass = r2[0].strftime("%d%m%Y")
-                cur.execute("UPDATE portal_users SET password_hash = %s WHERE mobile = %s",
-                            (hash_password(newpass), row[0]))
-                conn.commit()
-                send_sms(row[0], "Sewa Setu: your password has been reset to your "
-                                 "date of birth (DDMMYYYY).")
-        cur.close(); conn.close()
-        flash("If the mobile number exists, the password has been reset and sent by SMS.")
-    return render_template("reset.html")
+        action = request.form.get("action", "")
+        otp_code = request.form.get("otp", "").strip()
+
+        # Step 1: User requested OTP to reset password
+        if action == "request_otp" or (not otp_code and not request.form.get("new_password")):
+            if len(mobile) != 10 or not mobile.isdigit():
+                flash("Please enter a valid 10-digit registered mobile number.")
+                return render_template("reset.html", step=1, mobile=mobile)
+
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT applicant_name, dob FROM applications WHERE mobile = %s ORDER BY submitted_at DESC LIMIT 1", (mobile,))
+            app_info = cur.fetchone()
+            cur.execute("SELECT mobile FROM portal_users WHERE mobile = %s", (mobile,))
+            user_info = cur.fetchone()
+            cur.close(); conn.close()
+
+            if not app_info and not user_info:
+                flash("No pension application or account found for mobile number %s. Please verify your mobile number or apply for pension." % mobile)
+                return render_template("reset.html", step=1, mobile=mobile, not_found=True)
+
+            res = services.send_otp_for_mobile(mobile)
+            if res.get("success"):
+                flash("A 6-digit OTP has been sent to %s. Valid for 5 minutes." % mobile)
+                return render_template("reset.html", step=2, mobile=mobile, otp_sent=True, demo_otp=res.get("code"))
+            else:
+                flash(res.get("error", "Failed to send OTP."))
+                return render_template("reset.html", step=1, mobile=mobile)
+
+        # Step 2: User submits OTP and updates password (or restores DOB)
+        else:
+            new_password = request.form.get("new_password", "").strip()
+            confirm_password = request.form.get("confirm_password", "").strip()
+            reset_to_dob = (action == "reset_to_dob") or bool(request.form.get("reset_to_dob"))
+
+            v = services.verify_mobile_otp_code(mobile, otp_code)
+            if not v.get("valid"):
+                flash(v.get("error", "Invalid or expired OTP code."))
+                return render_template("reset.html", step=2, mobile=mobile, otp_sent=True)
+
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT id, dob FROM applications WHERE mobile = %s ORDER BY submitted_at DESC LIMIT 1", (mobile,))
+            app_row = cur.fetchone()
+            app_id = app_row[0] if app_row else None
+            app_dob = app_row[1] if app_row else None
+            dob_str = app_dob.strftime("%d%m%Y") if app_dob else "15081958"
+
+            if reset_to_dob or not new_password:
+                final_pass = dob_str
+                success_msg = "Your password has been restored to your Date of Birth (%s)." % dob_str
+            else:
+                if len(new_password) < 4:
+                    flash("New password must be at least 4 characters.")
+                    cur.close(); conn.close()
+                    return render_template("reset.html", step=2, mobile=mobile, otp_sent=True)
+                if confirm_password and new_password != confirm_password:
+                    flash("New password and confirm password do not match.")
+                    cur.close(); conn.close()
+                    return render_template("reset.html", step=2, mobile=mobile, otp_sent=True)
+                final_pass = new_password
+                success_msg = "Your password has been successfully updated."
+
+            cur.execute(
+                "INSERT INTO portal_users (mobile, password_hash) VALUES (%s, %s) "
+                "ON CONFLICT (mobile) DO UPDATE SET password_hash = EXCLUDED.password_hash",
+                (mobile, hash_password(final_pass))
+            )
+            conn.commit()
+            cur.close(); conn.close()
+
+            # Automatically authenticate session
+            session["logged_in"] = True
+            session["portal_mobile"] = mobile
+            send_sms(mobile, "Sewa Setu: Your password has been successfully reset.")
+            flash(success_msg + " You are now logged in.")
+
+            if app_id:
+                return redirect(url_for("view_application", app_id=app_id))
+            return redirect(url_for("status_login"))
+
+    return render_template("reset.html", step=1, mobile=mobile)
 
 
 # ---------------------------------------------------------------------------
