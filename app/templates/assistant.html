@@ -143,14 +143,28 @@
   }
   .chat-input-bar {
     display: flex;
-    gap: 12px;
+    flex-direction: column;
+    width: 100%;
     margin-top: 14px;
+    gap: 8px;
   }
   .chat-input-bar input {
-    flex: 1;
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
     min-height: 48px;
     font-size: 15px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color);
+  }
+  .chat-input-bar .btn-ai {
+    width: 100%;
+    min-height: 44px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 8px;
+    justify-content: center;
   }
   .integration-card {
     background: #faf5ff;
@@ -235,12 +249,17 @@
   </div>
 
   <form id="chat-form" class="chat-input-bar" onsubmit="handleChatSubmit(event)">
-    <input type="text" id="chat-input" placeholder="{% if current_lang == 'hi' %}यहाँ लिखें (उदा. आवेदन करना है, मोबाइल 9876500003 या SSP26424425)...{% else %}Type here (e.g. Apply with mobile 9876500003 or track SSP26424425)...{% endif %}" autocomplete="off" required>
-    <button type="submit" class="btn btn-ai" style="padding:10px 24px; min-height:48px;">
-      {% if current_lang == 'hi' %}भेजें &rarr;{% else %}Send &rarr;{% endif %}
-    </button>
+    <div style="width:100%;">
+      <input type="text" id="chat-input" placeholder="{% if current_lang == 'hi' %}यहाँ संदेश लिखें (उदा. आवेदन करना है, मोबाइल 9876500003 या SSP26424425)...{% else %}Type your message here (e.g. Apply with mobile 9876500003 or track SSP26424425)...{% endif %}" autocomplete="off" required>
+    </div>
+    <div style="width:100%;">
+      <button type="submit" class="btn btn-ai" id="chat-send-btn">
+        {% if current_lang == 'hi' %}संदेश भेजें &rarr;{% else %}Send &rarr;{% endif %}
+      </button>
+    </div>
   </form>
 
+  {% if not is_embed %}
   <div class="integration-card">
     <div class="integration-text">
       <h4>🔌 ChatGPT Custom Actions & Model Context Protocol (MCP)</h4>
@@ -252,6 +271,7 @@
       </a>
     </div>
   </div>
+  {% endif %}
 </div>
 
 <script>
