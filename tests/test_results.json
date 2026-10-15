@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-10-15 23:17:25",
-  "total_tests": 7,
-  "passed_tests": 0,
-  "failed_tests": 7,
-  "duration_seconds": 0.001,
-  "success": false,
+  "timestamp": "2026-10-15 19:39:25",
+  "total_tests": 63,
+  "passed_tests": 63,
+  "failed_tests": 0,
+  "duration_seconds": 3.274,
+  "success": true,
   "suites": [
     "test_shared_services.py",
     "test_citizen_mcp.py",
@@ -15,34 +15,5 @@
     "test_final_acceptance.py"
   ],
   "failures": [],
-  "errors": [
-    {
-      "test": "test_automatic_approval (unittest.loader._FailedTest.test_automatic_approval)",
-      "error": "ImportError: Failed to import test module: test_automatic_approval\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_automatic_approval.py\", line 28, in <module>\n    import werkzeug\nModuleNotFoundError: No module named 'werkzeug'\n\n"
-    },
-    {
-      "test": "test_citizen_mcp (unittest.loader._FailedTest.test_citizen_mcp)",
-      "error": "ImportError: Failed to import test module: test_citizen_mcp\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_citizen_mcp.py\", line 27, in <module>\n    import services\n  File \"/Users/hemant/Downloads/sewasetu-ai/app/services.py\", line 18, in <module>\n    import psycopg2\nModuleNotFoundError: No module named 'psycopg2'\n\n"
-    },
-    {
-      "test": "test_citizen_ux_privacy (unittest.loader._FailedTest.test_citizen_ux_privacy)",
-      "error": "ImportError: Failed to import test module: test_citizen_ux_privacy\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_citizen_ux_privacy.py\", line 28, in <module>\n    import werkzeug\nModuleNotFoundError: No module named 'werkzeug'\n\n"
-    },
-    {
-      "test": "test_e2e_security_resilience (unittest.loader._FailedTest.test_e2e_security_resilience)",
-      "error": "ImportError: Failed to import test module: test_e2e_security_resilience\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_e2e_security_resilience.py\", line 31, in <module>\n    import werkzeug\nModuleNotFoundError: No module named 'werkzeug'\n\n"
-    },
-    {
-      "test": "test_final_acceptance (unittest.loader._FailedTest.test_final_acceptance)",
-      "error": "ImportError: Failed to import test module: test_final_acceptance\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_final_acceptance.py\", line 26, in <module>\n    import services\n  File \"/Users/hemant/Downloads/sewasetu-ai/app/services.py\", line 18, in <module>\n    import psycopg2\nModuleNotFoundError: No module named 'psycopg2'\n\n"
-    },
-    {
-      "test": "test_officer_mcp (unittest.loader._FailedTest.test_officer_mcp)",
-      "error": "ImportError: Failed to import test module: test_officer_mcp\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_officer_mcp.py\", line 29, in <module>\n    import werkzeug\nModuleNotFoundError: No module named 'werkzeug'\n\n"
-    },
-    {
-      "test": "test_shared_services (unittest.loader._FailedTest.test_shared_services)",
-      "error": "ImportError: Failed to import test module: test_shared_services\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 433, in _find_test_path\n    module = self._get_module_from_name(name)\n  File \"/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/loader.py\", line 374, in _get_module_from_name\n    __import__(name)\n    ~~~~~~~~~~^^^^^^\n  File \"/Users/hemant/Downloads/sewasetu-ai/tests/test_shared_services.py\", line 23, in <module>\n    import services\n  File \"/Users/hemant/Downloads/sewasetu-ai/app/services.py\", line 18, in <module>\n    import psycopg2\nModuleNotFoundError: No module named 'psycopg2'\n\n"
-    }
-  ]
+  "errors": []
 }

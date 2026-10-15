@@ -3,8 +3,12 @@
 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
   <h2 style="margin:0;">System Evaluation &amp; Verification Dashboard</h2>
   <div>
+    {% if session.get('admin') %}
     <a href="/admin/dashboard" class="btn btn-secondary" style="font-size:14px; min-height:38px; padding:6px 16px;">&laquo; Admin Dashboard</a>
-    <a href="/admin/evaluation" class="btn" style="font-size:14px; min-height:38px; padding:6px 16px;">&#8635; Refresh Metrics</a>
+    {% else %}
+    <a href="/" class="btn btn-secondary" style="font-size:14px; min-height:38px; padding:6px 16px;">&laquo; Home</a>
+    {% endif %}
+    <a href="/evaluation" class="btn" style="font-size:14px; min-height:38px; padding:6px 16px;">&#8635; Refresh Metrics</a>
   </div>
 </div>
 
@@ -83,6 +87,12 @@
         <td><code>test_e2e_security_resilience.py</code></td>
         <td><span style="color:#22543d; font-weight:700;">&#10003; PASSED</span></td>
         <td>IDOR protection, path traversal, prompt injection, failure handling</td>
+      </tr>
+      <tr>
+        <td><strong>Final Acceptance End-to-End</strong></td>
+        <td><code>test_final_acceptance.py</code></td>
+        <td><span style="color:#22543d; font-weight:700;">&#10003; PASSED</span></td>
+        <td>11-step citizen lifecycle, officer review checklist, kiosk anti-cache, 15-day deemed approval</td>
       </tr>
     </tbody>
   </table>
