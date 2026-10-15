@@ -112,13 +112,7 @@ except Exception:
 
 
 def get_db():
-    return psycopg2.connect(
-        host=os.environ.get("DB_HOST") or config.get("database", "host"),
-        port=int(os.environ.get("DB_PORT") or config.get("database", "port", fallback=5432)),
-        dbname=os.environ.get("DB_NAME") or config.get("database", "name"),
-        user=os.environ.get("DB_USER") or config.get("database", "user"),
-        password=os.environ.get("DB_PASSWORD") or config.get("database", "password"),
-    )
+    return services.get_db()
 
 
 def sanitize(value, maxlen=100):
