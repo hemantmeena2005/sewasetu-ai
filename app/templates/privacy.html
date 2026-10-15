@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width:820px; margin:0 auto; padding:10px 0;">
+  <div style="display:inline-block; background:#e0f2fe; color:#0369a1; font-size:13px; font-weight:700; padding:4px 12px; border-radius:16px; margin-bottom:12px;">
+    {% if current_lang == 'hi' %}आधिकारिक डेटा संरक्षण नीति{% else %}Official Privacy & Data Protection Policy{% endif %}
+  </div>
+
+  <h2 style="font-size:28px; font-weight:800; color:var(--primary-dark); margin:0 0 16px;">
+    {% if current_lang == 'hi' %}गोपनीयता नीति (Privacy Policy){% else %}Privacy Policy & Citizen Data Protection{% endif %}
+  </h2>
+
+  <p style="font-size:16px; color:#475569; line-height:1.7;">
+    {% if current_lang == 'hi' %}
+    समाज कल्याण विभाग, पूर्वांचल सरकार द्वारा संचालित सेवा सेतु पोर्टल और इसके एआई सहायक (MCP व ChatGPT Custom Actions) नागरिकों की व्यक्तिगत व वित्तीय जानकारी की सुरक्षा के लिए पूर्णतः प्रतिबद्ध हैं।
+    {% else %}
+    The Department of Social Welfare, Government of Purvanchal operates the Sewa Setu Portal, its AI Assistant (MCP), and ChatGPT Custom Actions with strict adherence to citizen privacy, data minimization, and statutory protection under the Purvanchal Right to Public Services Act 2024.
+    {% endif %}
+  </p>
+
+  <hr style="border:none; border-top:1px solid var(--border-color); margin:24px 0;">
+
+  <div style="display:flex; flex-direction:column; gap:20px; font-size:15px; line-height:1.7; color:#334155;">
+    <div>
+      <h3 style="font-size:18px; font-weight:700; color:var(--primary); margin:0 0 6px;">
+        1. {% if current_lang == 'hi' %}डेटा संग्रह और उपयोग{% else %}Data Collection & Purpose{% endif %}
+      </h3>
+      <p style="margin:0;">
+        {% if current_lang == 'hi' %}
+        हम केवल वही जानकारी एकत्र करते हैं जो वृद्धावस्था पेंशन योजना के तहत पात्रता सत्यापन और डीबीटी (Direct Benefit Transfer) के लिए आवश्यक है: मोबाइल नंबर, नाम, जन्मतिथि, पता, बैंक खाता संख्या और आईएफएससी कोड।
+        {% else %}
+        We collect only the minimum required information necessary for eligibility verification and Direct Benefit Transfer (DBT) disbursement under the Old Age Pension Scheme: applicant mobile number, name, date of birth, residential block, bank account number, and IFSC code.
+        {% endif %}
+      </p>
+    </div>
+
+    <div>
+      <h3 style="font-size:18px; font-weight:700; color:var(--primary); margin:0 0 6px;">
+        2. {% if current_lang == 'hi' %}ओटीपी और संवेदनशील डेटा सुरक्षा{% else %}OTP & Sensitive Data Safeguards{% endif %}
+      </h3>
+      <p style="margin:0;">
+        {% if current_lang == 'hi' %}
+        मोबाइल सत्यापन के लिए उत्पन्न ओटीपी केवल 300 सेकंड के लिए मान्य होता है। बैंक खाता विवरण पोर्टल और एआई प्रतिक्रियाओं में केवल अंतिम 4 अंकों (उदा. XXXXXX1234) के साथ सुरक्षित रूप से मास्क किया जाता है।
+        {% else %}
+        One-Time Passwords (OTPs) generated for citizen mobile authentication expire automatically after 300 seconds. Bank account numbers are masked across all citizen-facing interfaces and AI responses (displaying only the last four digits, e.g., <code>XXXXXX1234</code>).
+        {% endif %}
+      </p>
+    </div>
+
+    <div>
+      <h3 style="font-size:18px; font-weight:700; color:var(--primary); margin:0 0 6px;">
+        3. {% if current_lang == 'hi' %}एआई सहायक एवं चैटजीपीटी एकीकरण{% else %}AI Assistant & ChatGPT Actions Protection{% endif %}
+      </h3>
+      <p style="margin:0;">
+        {% if current_lang == 'hi' %}
+        जब आप हमारे एआई सहायक या चैटजीपीटी एक्शन का उपयोग करते हैं, तो कोई भी व्यक्तिगत डेटा अनधिकृत तृतीय पक्षों को नहीं बेचा जाता और न ही मॉडल प्रशिक्षण के लिए उपयोग किया जाता है। सभी सबमिशन नागरिक की स्पष्ट सहमति के बाद ही पंजीकृत होते हैं।
+        {% else %}
+        When using the Sewa Setu AI Assistant or OpenAI Custom GPT Actions, communications occur over secure encrypted HTTPS channels. Citizen details are never sold or repurposed for commercial AI model training. Application submissions require explicit citizen consent and valid OTP verification.
+        {% endif %}
+      </p>
+    </div>
+
+    <div>
+      <h3 style="font-size:18px; font-weight:700; color:var(--primary); margin:0 0 6px;">
+        4. {% if current_lang == 'hi' %}सार्वजनिक कियोस्क सुरक्षा{% else %}Public Kiosk Anti-Cache Protection{% endif %}
+      </h3>
+      <p style="margin:0;">
+        {% if current_lang == 'hi' %}
+        सार्वजनिक काउंटरों पर नागरिकों की गोपनीयता बनाए रखने के लिए, सभी नागरिक पृष्ठ सख्त एंटी-कैश हेडर (no-store, no-cache) लागू करते हैं और "सत्र समाप्त करें" पर क्लिक करते ही सारा स्थानीय डेटा नष्ट हो जाता है।
+        {% else %}
+        All citizen workflows enforce strict HTTP anti-cache headers (<code>Cache-Control: no-store, no-cache, must-revalidate</code>) to prevent browser history caching on shared public terminals and kiosks.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <div style="margin-top:32px; padding:16px 20px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; color:#475569;">
+    <strong>{% if current_lang == 'hi' %}संपर्क व शिकायत निवारण:{% else %}Department Contact & Grievance Redressal:{% endif %}</strong><br>
+    Department of Social Welfare, Government of Purvanchal &middot; Email: <code>privacy@sewasetu.gov.in</code> &middot; RTPS Helpline: 1800-PUR-SETU
+  </div>
+</div>
+{% endblock %}

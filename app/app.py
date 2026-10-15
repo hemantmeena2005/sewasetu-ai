@@ -1013,6 +1013,12 @@ def assistant():
     return render_template("assistant.html")
 
 
+@app.route("/privacy")
+def privacy_policy():
+    """Official citizen privacy and data protection policy."""
+    return render_template("privacy.html")
+
+
 @app.route("/api/openapi.json", methods=["GET"])
 def api_openapi_json():
     """Authoritative OpenAPI 3.1 specification for ChatGPT Custom GPT Actions."""
