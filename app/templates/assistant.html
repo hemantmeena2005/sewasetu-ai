@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .assistant-container {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .assistant-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid var(--border-color);
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .assistant-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .assistant-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--ai-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  }
+  .assistant-info h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-dark);
+  }
+  .assistant-info p {
+    margin: 2px 0 0;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  /* Chat messages area */
+  .chat-box {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 380px;
+    max-height: 520px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .msg-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .msg-row.user {
+    flex-direction: row-reverse;
+  }
+  .msg-bubble {
+    max-width: 80%;
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 15px;
+    line-height: 1.6;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .msg-bubble.bot {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: var(--text-dark);
+    border-top-left-radius: 2px;
+  }
+  .msg-bubble.user {
+    background: var(--primary);
+    color: #ffffff;
+    border-top-right-radius: 2px;
+  }
+  /* Quick Prompt Chips */
+  .prompt-chips-wrapper {
+    margin: 18px 0 12px;
+  }
+  .prompt-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .prompt-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .prompt-chip-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .prompt-chip-btn:hover {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+  }
+  /* Chat input form */
+  .chat-input-bar {
+    display: flex;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .chat-input-bar input {
+    flex: 1;
+    max-width: 100%;
+    min-height: 48px;
+    font-size: 15px;
+  }
+  /* Integration note */
+  .integration-card {
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 10px;
+    padding: 18px 22px;
+    margin-top: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .integration-text h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: #6b21a8;
+  }
+  .integration-text p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #7e22ce;
+  }
+</style>
+
+<div class="assistant-container">
+  <div class="assistant-header">
+    <div class="assistant-title-group">
+      <div class="assistant-avatar" aria-hidden="true">🤖</div>
+      <div class="assistant-info">
+        <h2>{{ t('ai_assistant_title') }}</h2>
+        <p>{% if current_lang == 'hi' %}आधिकारिक डिजिटल पेंशन मार्गदर्शक · 24/7 सेवा उपलब्ध{% else %}Authoritative Digital Pension Guide &middot; 24/7 Available{% endif %}</p>
+      </div>
+    </div>
+    <div>
+      <a href="/" class="btn btn-secondary" style="font-size:14px; padding:8px 16px; min-height:auto;">
+        &larr; {{ t('home') }}
+      </a>
+    </div>
+  </div>
+
+  <div class="chat-box" id="chat-messages" role="log" aria-live="polite">
+    <div class="msg-row bot">
+      <div class="msg-bubble bot">
+        <strong>नमस्ते! Hello!</strong><br>
+        {% if current_lang == 'hi' %}
+        मैं समाज कल्याण विभाग पूर्वांचल का आधिकारिक <strong>सेवा सेतु एआई सहायक</strong> हूँ।<br>
+        आप मुझसे पात्रता नियम जान सकते हैं, अपना आवेदन नंबर (उदा. <code>SSP26424425</code>) डालकर स्थिति जांच सकते हैं या सोनारी ब्लॉक के पायलट नियम पूछ सकते हैं।
+        {% else %}
+        I am the official <strong>Sewa Setu AI Assistant</strong> for the Department of Social Welfare, Government of Purvanchal.<br>
+        You can ask me about pension eligibility rules, check your live application status (e.g. <code>SSP26424425</code>), or learn about the Sonari AI pilot.
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="prompt-chips-wrapper">
+    <div class="prompt-label">{% if current_lang == 'hi' %}सुझाए गए प्रश्न:{% else %}Suggested Prompts:{% endif %}</div>
+    <div class="prompt-chips">
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}वृद्धावस्था पेंशन की पात्रता क्या है?{% else %}What is the eligibility for Old Age Pension?{% endif %}')">
+        📋 {% if current_lang == 'hi' %}पात्रता नियम{% else %}Eligibility Rules{% endif %}
+      </button>
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}सोनारी पायलट ब्लॉक के नियम क्या हैं?{% else %}What are the Sonari Pilot Block rules?{% endif %}')">
+        📍 {% if current_lang == 'hi' %}सोनारी पायलट ब्लॉक{% else %}Sonari Pilot Block{% endif %}
+      </button>
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}आवेदन के लिए कौन से दस्तावेज चाहिए?{% else %}What documents are required to apply?{% endif %}')">
+        📁 {% if current_lang == 'hi' %}आवश्यक दस्तावेज{% else %}Required Documents{% endif %}
+      </button>
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('SSP26424425')">
+        🔍 {% if current_lang == 'hi' %}आवेदन स्थिति जांचें (SSP26424425){% else %}Track Sample (SSP26424425){% endif %}
+      </button>
+    </div>
+  </div>
+
+  <form id="chat-form" class="chat-input-bar" onsubmit="handleChatSubmit(event)">
+    <input type="text" id="chat-input" placeholder="{% if current_lang == 'hi' %}यहाँ अपना प्रश्न या आवेदन संख्या (उदा. SSP26424425) लिखें...{% else %}Type your question or Application No (e.g. SSP26424425)...{% endif %}" autocomplete="off" required>
+    <button type="submit" class="btn btn-ai" style="padding:10px 24px; min-height:48px;">
+      {% if current_lang == 'hi' %}भेजें &rarr;{% else %}Send &rarr;{% endif %}
+    </button>
+  </form>
+
+  <div class="integration-card">
+    <div class="integration-text">
+      <h4>🔌 ChatGPT Custom Actions & Model Context Protocol (MCP)</h4>
+      <p>{% if current_lang == 'hi' %}आप हमारे आरटीपीएस बैकएंड को अपने निजी चैटजीपीटी जीपीटी (Custom GPT) या एमसीपी रनटाइम से भी जोड़ सकते हैं।{% else %}You can also connect this RTPS backend directly to ChatGPT Custom GPTs or MCP runtimes.{% endif %}</p>
+    </div>
+    <div>
+      <a href="/api/openapi.json" target="_blank" class="btn btn-secondary" style="background:#ffffff; color:#6b21a8; border:1px solid #d8b4fe; font-size:13px; padding:8px 14px; min-height:auto;">
+        OpenAPI 3.1 Spec ↗
+      </a>
+    </div>
+  </div>
+</div>
+
+<script>
+  var isHindi = "{{ current_lang }}" === "hi";
+
+  function appendMessage(sender, text) {
+    var box = document.getElementById('chat-messages');
+    var row = document.createElement('div');
+    row.className = 'msg-row ' + sender;
+
+    var bubble = document.createElement('div');
+    bubble.className = 'msg-bubble ' + sender;
+    bubble.innerHTML = text;
+
+    row.appendChild(bubble);
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function sendPrompt(text) {
+    document.getElementById('chat-input').value = text;
+    handleChatSubmit(new Event('submit'));
+  }
+
+  async function handleChatSubmit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    var input = document.getElementById('chat-input');
+    var query = input.value.trim();
+    if (!query) return;
+
+    appendMessage('user', query);
+    input.value = '';
+
+    // Check if query looks like an application number (e.g. SSP...)
+    var appMatch = query.match(/SSP[0-9A-Za-z]+/i);
+    if (appMatch) {
+      var appNo = appMatch[0].toUpperCase();
+      appendMessage('bot', isHindi ? '⏳ आवेदन संख्या <code>' + appNo + '</code> की स्थिति खोजी जा रही है...' : '⏳ Looking up status for <code>' + appNo + '</code>...');
+      try {
+        var resp = await fetch('/api/application/status?application_no=' + encodeURIComponent(appNo));
+        var data = await resp.json();
+        if (data.status) {
+          var statusColor = (data.status === 'APPROVED' || data.status === 'DEEMED_APPROVED') ? '#166534' : (data.status === 'REJECTED' ? '#991b1b' : '#b45309');
+          var statusBg = (data.status === 'APPROVED' || data.status === 'DEEMED_APPROVED') ? '#f0fdf4' : (data.status === 'REJECTED' ? '#fef2f2' : '#fffbeb');
+          
+          var out = '<div style="background:' + statusBg + '; border:1.5px solid ' + statusColor + '; padding:14px; border-radius:8px; margin-top:6px;">' +
+            '<div style="font-size:18px; font-weight:800; color:' + statusColor + ';">' + 
+            (isHindi ? 'स्थिति: ' : 'Status: ') + data.status + '</div>' +
+            '<div style="margin-top:6px; font-size:14px;"><strong>' + (isHindi ? 'आवेदन संख्या:' : 'Application No:') + '</strong> ' + (data.application_no || appNo) + '</div>' +
+            '<div style="font-size:14px;"><strong>' + (isHindi ? 'आवेदक नाम:' : 'Applicant Name:') + '</strong> ' + (data.applicant_name || 'N/A') + '</div>' +
+            '<div style="font-size:14px;"><strong>' + (isHindi ? 'प्रशासनिक ब्लॉक:' : 'Block:') + '</strong> ' + (data.block || 'N/A') + '</div>' +
+            '<div style="font-size:14px;"><strong>' + (isHindi ? 'आवेदन दिनांक:' : 'Submitted Date:') + '</strong> ' + (data.submission_date || data.submitted_date || 'N/A') + '</div>' +
+            (data.within_sla ? '<div style="margin-top:6px; font-size:13px; color:#15803d; font-weight:600;">✓ 15-Day Statutory RTPS SLA Active</div>' : '') +
+            '</div>';
+          appendMessage('bot', out);
+        } else {
+          appendMessage('bot', isHindi ? '⚠️ आवेदन संख्या ' + appNo + ' का कोई रिकॉर्ड नहीं मिला। कृपया संख्या की जांच करें।' : '⚠️ No record found for application ' + appNo + '. Please verify the number.');
+        }
+      } catch (err) {
+        appendMessage('bot', isHindi ? '⚠️ सर्वर से संपर्क करने में त्रुटि हुई। कृपया पुनः प्रयास करें।' : '⚠️ Error querying portal API. Please try again.');
+      }
+      return;
+    }
+
+    // Eligibility queries
+    var lower = query.toLowerCase();
+    if (lower.includes('eligib') || lower.includes('rule') || lower.includes('पात्र') || lower.includes('नियम') || lower.includes('age') || lower.includes('उम्र') || lower.includes('आयु')) {
+      var eligMsg = isHindi ?
+        '<strong>📋 पूर्वांचल वृद्धावस्था पेंशन पात्रता नियम:</strong><br>' +
+        '1. <strong>आयु:</strong> आवेदक की आयु न्यूनतम <strong>60 वर्ष</strong> होनी चाहिए।<br>' +
+        '2. <strong>पेंशन राशि:</strong> <strong>₹250 प्रतिमाह</strong> सीधे आधार से जुड़े बैंक खाते (DBT) में।<br>' +
+        '3. <strong>निवासी:</strong> पूर्वांचल राज्य के 6 अधिसूचित ब्लॉकों (सोनारी, राजापारा, धेमाजी पाथार, बोरगांव, नामती, खेलुआ) का स्थायी निवासी।<br>' +
+        '4. <strong>आरटीपीएस गारंटी:</strong> 15 दिनों में स्वतः स्वीकृति (Deemed Approval) का कानूनी अधिकार।' :
+        '<strong>📋 Purvanchal Old Age Pension Scheme Criteria:</strong><br>' +
+        '1. <strong>Minimum Age:</strong> Applicant must be at least <strong>60 years old</strong>.<br>' +
+        '2. <strong>Monthly Pension:</strong> <strong>₹250 / month</strong> deposited via Direct Benefit Transfer (DBT).<br>' +
+        '3. <strong>Jurisdiction:</strong> Resident of one of 6 administrative blocks (Sonari, Rajapara, Dhemaji Pathar, Borgaon, Namti, Khelua).<br>' +
+        '4. <strong>Statutory SLA:</strong> 15-day deemed approval guarantee under RTPS Act 2024.';
+      appendMessage('bot', eligMsg);
+      return;
+    }
+
+    // Sonari Block queries
+    if (lower.includes('sonari') || lower.includes('सोनारी') || lower.includes('pilot') || lower.includes('पायलट')) {
+      var pilotMsg = isHindi ?
+        '<strong>📍 सोनारी पायलट ब्लॉक (Sonari AI Pilot):</strong><br>' +
+        'समाज कल्याण विभाग के निर्देशानुसार, <strong>सोनारी ब्लॉक</strong> को आधिकारिक एआई सहायता पायलट के लिए अधिकृत किया गया है। सोनारी के नागरिक प्राकृतिक भाषा में चैटजीपीटी या एआई सहायक द्वारा अपना आवेदन सीधे जमा कर सकते हैं। अन्य 5 ब्लॉकों के नागरिक वेब पोर्टल या सरकारी कियोस्क द्वारा आवेदन कर सकते हैं।' :
+        '<strong>📍 Sonari AI Pilot Block:</strong><br>' +
+        'Under Government Notification, <strong>Sonari Block</strong> is the active pilot block enabled for external AI assistant submissions. Citizens in Sonari can apply through AI assistants or the web portal. Citizens in other blocks can apply directly via the web portal or public kiosks.';
+      appendMessage('bot', pilotMsg);
+      return;
+    }
+
+    // Documents query
+    if (lower.includes('doc') || lower.includes('दस्तावेज') || lower.includes('कागज') || lower.includes('proof') || lower.includes('प्रमाण')) {
+      var docMsg = isHindi ?
+        '<strong>📁 आवश्यक दस्तावेज एवं जानकारी:</strong><br>' +
+        '1. <strong>सक्रिय मोबाइल नंबर:</strong> 6-अंकीय ओटीपी सत्यापन के लिए।<br>' +
+        '2. <strong>आयु प्रमाण दस्तावेज:</strong> जन्म प्रमाण पत्र, आधार कार्ड या मतदाता पहचान पत्र (PDF या JPG/PNG प्रारूप, अधिकतम 2 MB)।<br>' +
+        '3. <strong>बैंक खाता विवरण:</strong> बैंक खाता संख्या और मान्य 11-अक्षरीय आईएफएससी (IFSC) कोड।<br>' +
+        '4. <strong>सत्यनिष्ठा घोषणा:</strong> आवेदन सबमिट करने से पूर्व सहमति।' :
+        '<strong>📁 Required Documents & Information:</strong><br>' +
+        '1. <strong>Active Mobile Number:</strong> For 6-digit OTP verification.<br>' +
+        '2. <strong>Age Proof Document:</strong> Birth certificate, Aadhaar, or Voter ID (PDF/JPG/PNG, up to 2MB).<br>' +
+        '3. <strong>Bank Account Details:</strong> Bank account number & valid 11-character IFSC code for DBT transfers.<br>' +
+        '4. <strong>Citizen Declaration:</strong> Explicit consent confirming true details.';
+      appendMessage('bot', docMsg);
+      return;
+    }
+
+    // Fallback general guidance
+    var defMsg = isHindi ?
+      'धन्यवाद! आप तुरंत <a href="/apply" style="color:var(--primary); font-weight:700;">पेंशन के लिए आवेदन करें</a> अथवा अपना आवेदन नंबर डालकर स्थिति जान सकते हैं। किसी अन्य सहायता के लिए कृपया ऊपर दिए गए विकल्पों को चुनें।' :
+      'Thank you! You can <a href="/apply" style="color:var(--primary); font-weight:700;">Apply for Pension</a> right now or enter an application number to track status. Feel free to click any of the suggested topics above.';
+    appendMessage('bot', defMsg);
+  }
+</script>
+{% endblock %}

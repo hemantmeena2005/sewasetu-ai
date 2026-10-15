@@ -1,36 +1,453 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{{ t('welcome_heading') }}</h2>
-<p style="font-size:20px; line-height:1.7;">{{ t('welcome_desc') }}</p>
+<style>
+  .hero-section {
+    padding: 10px 0 24px;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .govt-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e0f2fe;
+    color: #0369a1;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary-dark);
+    margin: 0 0 12px;
+    line-height: 1.25;
+  }
+  .hero-desc {
+    font-size: 19px;
+    color: #475569;
+    line-height: 1.7;
+    margin: 0 0 22px;
+    max-width: 840px;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  /* AI Assistant Showcase Spotlight */
+  .ai-showcase-card {
+    background: linear-gradient(135deg, #f8faff 0%, #f1f4ff 100%);
+    border: 2px solid #c7d2fe;
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin: 32px 0;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);
+  }
+  .ai-showcase-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--ai-gradient);
+  }
+  .ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #ede9fe;
+    color: #6d28d9;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ai-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1e1b4b;
+    margin: 10px 0 8px;
+  }
+  .ai-desc {
+    font-size: 16px;
+    color: #4338ca;
+    line-height: 1.6;
+    margin: 0 0 18px;
+    max-width: 780px;
+  }
+  .ai-chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+  .ai-chip {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .ai-btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+    margin: 32px 0;
+  }
+  .stat-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .stat-number {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--primary);
+    line-height: 1.1;
+  }
+  .stat-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 6px;
+  }
+  /* Interactive Eligibility Calculator */
+  .calc-container {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 26px 28px;
+    margin: 32px 0;
+  }
+  .calc-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+  .calc-header p {
+    margin: 4px 0 18px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  .calc-form-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .calc-field {
+    flex: 1;
+    min-width: 180px;
+  }
+  .calc-field label {
+    margin: 0 0 6px;
+    font-size: 14px;
+  }
+  .calc-result-box {
+    margin-top: 18px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.6;
+    display: none;
+  }
+  /* Process Steps */
+  .steps-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+    padding: 0;
+    list-style: none;
+  }
+  .step-item {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+  .step-num-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .step-item h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+  .step-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.5;
+  }
+  .kiosk-notice-banner {
+    margin-top: 32px;
+    padding: 18px 22px;
+    background: #f1f5f9;
+    border-left: 4px solid #64748b;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #334155;
+    line-height: 1.6;
+  }
+</style>
 
-{% if hours_left is not none %}
-<div class="helper-box" style="background:#e6fffa; border-left-color:#319795; color:#234e52; font-weight:600;">
-  {{ t('window_open', hours=hours_left) }}
+<div class="hero-section">
+  <div class="govt-badge">
+    <span>🏛️</span>
+    <span>{% if current_lang == 'hi' %}पूर्वांचल सरकार · सेवा का अधिकार अधिनियम 2024{% else %}Govt of Purvanchal &middot; RTPS Act 2024{% endif %}</span>
+  </div>
+
+  <h2 class="hero-title">{{ t('welcome_heading') }}</h2>
+  <p class="hero-desc">{{ t('welcome_desc') }}</p>
+
+  {% if hours_left is not none %}
+  <div class="helper-box" style="background:#ecfdf5; border-left-color:#10b981; color:#065f46; font-weight:600;">
+    {{ t('window_open', hours=hours_left) }}
+  </div>
+  {% else %}
+  <div class="flash">
+    {{ t('window_closed') }}
+  </div>
+  {% endif %}
+
+  <div class="hero-actions">
+    <a href="/apply" class="btn" role="button" aria-label="{{ t('apply_pension') }}">
+      📝 {{ t('apply_pension') }} &rarr;
+    </a>
+    <a href="/status" class="btn btn-secondary" role="button" aria-label="{{ t('check_status') }}">
+      🔍 {{ t('check_status') }}
+    </a>
+    <a href="/assistant" class="btn btn-ai" role="button" aria-label="{{ t('ai_assistant_title') }}">
+      🤖 {{ t('open_assistant_btn') }}
+    </a>
+  </div>
 </div>
-{% else %}
-<div class="flash">
-  {{ t('window_closed') }}
+
+<!-- AI Assistant Spotlight Card -->
+<section class="ai-showcase-card" id="ai-assistant" aria-labelledby="ai-heading">
+  <div class="ai-badge">
+    <span>⚡</span>
+    <span>{{ t('ai_assistant_badge') }}</span>
+  </div>
+  <h3 class="ai-title" id="ai-heading">{{ t('ai_assistant_title') }}</h3>
+  <p class="ai-desc">{{ t('ai_assistant_desc') }}</p>
+
+  <div class="ai-chips-list">
+    <span class="ai-chip">🗣️ {% if current_lang == 'hi' %}हिन्दी व अंग्रेजी में बातचीत{% else %}Hindi & English Voice / Text{% endif %}</span>
+    <span class="ai-chip">📍 {% if current_lang == 'hi' %}सोनारी पायलट ब्लॉक समर्थित{% else %}Sonari Pilot Block Active{% endif %}</span>
+    <span class="ai-chip">⏱️ {% if current_lang == 'hi' %}15-दिवसीय स्वतः स्वीकृति ट्रैकिंग{% else %}15-Day Statutory SLA Guarantee{% endif %}</span>
+    <span class="ai-chip">🔒 {% if current_lang == 'hi' %}सुरक्षित शून्य-डेटा कियोस्क सुरक्षा{% else %}Zero-Data Kiosk Privacy{% endif %}</span>
+  </div>
+
+  <div class="ai-btn-row">
+    <a href="/assistant" class="btn btn-ai">
+      🤖 {% if current_lang == 'hi' %}एआई सहायक से चैट करें ↗{% else %}Chat with AI Assistant ↗{% endif %}
+    </a>
+    <a href="/api/openapi.json" target="_blank" class="btn btn-secondary" style="background:#ffffff; color:#334155; border:1px solid #cbd5e1;">
+      🔌 {% if current_lang == 'hi' %}ChatGPT OpenAPI 3.1 स्कीमा देखें{% else %}View OpenAPI 3.1 Spec{% endif %}
+    </a>
+  </div>
+</section>
+
+<!-- Interactive Quick Eligibility Calculator -->
+<section class="calc-container" aria-label="Eligibility Calculator">
+  <div class="calc-header">
+    <h3>{{ t('quick_eligibility_heading') }}</h3>
+    <p>{{ t('quick_eligibility_sub') }}</p>
+  </div>
+  <div class="calc-form-row">
+    <div class="calc-field">
+      <label for="calc-age">{% if current_lang == 'hi' %}आवेदक की आयु (वर्ष में):{% else %}Applicant Age (Years):{% endif %}</label>
+      <input type="text" id="calc-age" placeholder="e.g. 62" style="max-width:100%;">
+    </div>
+    <div class="calc-field">
+      <label for="calc-block">{% if current_lang == 'hi' %}प्रशासनिक ब्लॉक:{% else %}Administrative Block:{% endif %}</label>
+      <select id="calc-block" style="max-width:100%;">
+        <option value="Sonari">Sonari (सोनारी) — AI Pilot Active</option>
+        <option value="Rajapara">Rajapara (राजापारा)</option>
+        <option value="Dhemaji Pathar">Dhemaji Pathar (धेमाजी पाथार)</option>
+        <option value="Borgaon">Borgaon (बोरगांव)</option>
+        <option value="Namti">Namti (नामती)</option>
+        <option value="Khelua">Khelua (खेलुआ)</option>
+      </select>
+    </div>
+    <div style="flex-shrink:0;">
+      <button type="button" class="btn btn-accent" id="calc-submit-btn" style="min-height:48px;">
+        🔍 {{ t('check_eligibility_btn') }}
+      </button>
+    </div>
+  </div>
+  <div id="calc-result" class="calc-result-box" role="status"></div>
+</section>
+
+<!-- Key Statistics / Policy Pillars -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-number">{{ t('stat_pension_val') }}</div>
+    <div class="stat-label">{{ t('stat_pension_label') }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ t('stat_sla_val') }}</div>
+    <div class="stat-label">{{ t('stat_sla_label') }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ t('stat_age_val') }}</div>
+    <div class="stat-label">{{ t('stat_age_label') }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-number">{{ t('stat_pilot_val') }}</div>
+    <div class="stat-label">{{ t('stat_pilot_label') }}</div>
+  </div>
 </div>
-{% endif %}
 
-<div style="display:flex; gap:16px; margin:28px 0; flex-wrap:wrap;">
-  <a href="/apply" class="btn" role="button" aria-label="{{ t('apply_pension') }}">{{ t('apply_pension') }}</a>
-  <a href="/status" class="btn btn-secondary" role="button" aria-label="{{ t('check_status') }}">{{ t('check_status') }}</a>
+<hr style="border:none; border-top:1px solid var(--border-color); margin:36px 0;">
+
+<!-- 6-Step Application Guide -->
+<section>
+  <h3 style="font-size:22px; font-weight:800; color:var(--primary-dark); margin-bottom:16px;">
+    {{ t('how_to_apply') }}
+  </h3>
+  <ol class="steps-list">
+    <li class="step-item">
+      <div class="step-num-badge">1</div>
+      <h4>{{ t('step_progress', current=1) }}</h4>
+      <p>{{ t('step_1_desc') }}</p>
+    </li>
+    <li class="step-item">
+      <div class="step-num-badge">2</div>
+      <h4>{{ t('step_progress', current=2) }}</h4>
+      <p>{{ t('step_2_desc') }}</p>
+    </li>
+    <li class="step-item">
+      <div class="step-num-badge">3</div>
+      <h4>{{ t('step_progress', current=3) }}</h4>
+      <p>{{ t('step_3_desc') }}</p>
+    </li>
+    <li class="step-item">
+      <div class="step-num-badge">4</div>
+      <h4>{{ t('step_progress', current=4) }}</h4>
+      <p>{{ t('step_4_desc') }}</p>
+    </li>
+    <li class="step-item">
+      <div class="step-num-badge">5</div>
+      <h4>{{ t('step_progress', current=5) }}</h4>
+      <p>{{ t('step_5_desc') }}</p>
+    </li>
+    <li class="step-item">
+      <div class="step-num-badge">6</div>
+      <h4>{{ t('step_progress', current=6) }}</h4>
+      <p>{{ t('step_6_desc') }}</p>
+    </li>
+  </ol>
+</section>
+
+<div class="kiosk-notice-banner">
+  <strong>🛡️ {% if current_lang == 'hi' %}सार्वजनिक कियोस्क व फोन उपयोगकर्ताओं के लिए सूचना:{% else %}Notice for Public Kiosk & Shared Terminal Users:{% endif %}</strong>
+  {% if current_lang == 'hi' %}
+  वरिष्ठ नागरिकों की व्यक्तिगत गोपनीयता और बैंकिंग सुरक्षा के लिए, सार्वजनिक काउंटर या कंप्यूटर छोड़ने से पहले शीर्ष दाईं ओर दिए गए <em>"{{ t('clear_session') }}"</em> बटन पर अवश्य क्लिक करें।
+  {% else %}
+  To protect applicant privacy and banking confidentiality, always click <em>"{{ t('clear_session') }}"</em> at the top right before leaving this terminal.
+  {% endif %}
 </div>
 
-<hr style="border:none; border-top:1px solid var(--border-color); margin:32px 0;">
+<script>
+  // Interactive Eligibility Calculator
+  document.getElementById('calc-submit-btn').addEventListener('click', function() {
+    var ageVal = parseInt(document.getElementById('calc-age').value.trim(), 10);
+    var blockVal = document.getElementById('calc-block').value;
+    var resBox = document.getElementById('calc-result');
+    var isHindi = "{{ current_lang }}" === "hi";
 
-<h3>{{ t('how_to_apply') }}</h3>
-<ol style="font-size:17px; line-height:1.8; padding-left:24px;">
-  <li><strong>{{ t('step_progress', current=1) }}:</strong> {{ t('step_1_desc') }}</li>
-  <li><strong>{{ t('step_progress', current=2) }}:</strong> {{ t('step_2_desc') }}</li>
-  <li><strong>{{ t('step_progress', current=3) }}:</strong> {{ t('step_3_desc') }}</li>
-  <li><strong>{{ t('step_progress', current=4) }}:</strong> {{ t('step_4_desc') }}</li>
-  <li><strong>{{ t('step_progress', current=5) }}:</strong> {{ t('step_5_desc') }}</li>
-  <li><strong>{{ t('step_progress', current=6) }}:</strong> {{ t('step_6_desc') }}</li>
-</ol>
+    if (isNaN(ageVal) || ageVal <= 0) {
+      resBox.style.display = 'block';
+      resBox.style.background = '#fef2f2';
+      resBox.style.border = '1px solid #f87171';
+      resBox.style.color = '#991b1b';
+      resBox.innerHTML = isHindi ? '⚠️ कृपया एक मान्य आयु संख्या दर्ज करें (उदा. 62)' : '⚠️ Please enter a valid numerical age (e.g. 62)';
+      return;
+    }
 
-<div class="note" style="margin-top:20px; padding:12px; background:#f7fafc; border-radius:6px;">
-  <strong>Notice for Kiosk & Public Phone Users:</strong> To protect applicant privacy, always click <em>"{{ t('clear_session') }}"</em> at the top right before leaving this terminal.
-</div>
+    resBox.style.display = 'block';
+
+    if (ageVal >= 60) {
+      var isPilot = (blockVal === 'Sonari');
+      resBox.style.background = '#f0fdf4';
+      resBox.style.border = '1px solid #86efac';
+      resBox.style.color = '#166534';
+      
+      var html = '<strong>✅ ' + (isHindi ? 'बधाई! आप पात्र हैं।' : 'Eligible for Old Age Pension!') + '</strong><br>';
+      html += (isHindi ? '• आयु मानदंड: ' + ageVal + ' वर्ष (न्यूनतम आवश्यक: 60 वर्ष) - पूर्ण' : '• Age Criterion: ' + ageVal + ' years (Min required: 60) — Passed') + '<br>';
+      html += (isHindi ? '• मासिक पेंशन राशि: ₹250 प्रतिमाह (प्रत्यक्ष बैंक अंतरण / DBT)' : '• Monthly Benefit: ₹250 / month via direct bank transfer (DBT)') + '<br>';
+      
+      if (isPilot) {
+        html += '<span style="display:inline-block; margin-top:8px; padding:4px 10px; background:#ede9fe; color:#6d28d9; border-radius:6px; font-weight:700;">🤖 ' + 
+          (isHindi ? 'सोनारी ब्लॉक एआई पायलट: आप हमारे एआई सहायक द्वारा भी आवेदन कर सकते हैं!' : 'Sonari AI Pilot Active: You can apply via AI Assistant or Web Portal!') + '</span>';
+      } else {
+        html += '<span style="display:inline-block; margin-top:8px; padding:4px 10px; background:#e0f2fe; color:#0369a1; border-radius:6px; font-weight:600;">📝 ' + 
+          (isHindi ? 'ब्लॉक ' + blockVal + ': आप वेब पोर्टल द्वारा ऑनलाइन आवेदन कर सकते हैं।' : 'Block ' + blockVal + ': You can apply online via the Web Portal.') + '</span>';
+      }
+
+      html += '<div style="margin-top:12px;"><a href="/apply" class="btn" style="padding:8px 18px; font-size:14px; min-height:auto;">' + 
+        (isHindi ? 'अभी आवेदन करें &rarr;' : 'Apply Now &rarr;') + '</a></div>';
+
+      resBox.innerHTML = html;
+    } else {
+      resBox.style.background = '#fffbeb';
+      resBox.style.border = '1px solid #fcd34d';
+      resBox.style.color = '#92400e';
+      
+      var diff = 60 - ageVal;
+      var msg = isHindi ? 
+        '<strong>ℹ️ आयु सीमा अपूर्ण:</strong> इस योजना के लिए न्यूनतम आयु 60 वर्ष आवश्यक है। आपकी वर्तमान आयु ' + ageVal + ' वर्ष है (पात्रता हेतु ' + diff + ' वर्ष शेष हैं)।' : 
+        '<strong>ℹ️ Age Threshold Not Met:</strong> Minimum age required for the Old Age Pension scheme is 60 years. Applicant is currently ' + ageVal + ' years old (' + diff + ' years remaining).';
+      resBox.innerHTML = msg;
+    }
+  });
+</script>
 {% endblock %}

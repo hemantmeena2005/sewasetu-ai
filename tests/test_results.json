@@ -1,9 +1,9 @@
 {
-  "timestamp": "2026-10-15 22:47:45",
+  "timestamp": "2026-10-15 23:17:25",
   "total_tests": 7,
   "passed_tests": 0,
   "failed_tests": 7,
-  "duration_seconds": 0.093,
+  "duration_seconds": 0.001,
   "success": false,
   "suites": [
     "test_shared_services.py",

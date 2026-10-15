@@ -49,7 +49,7 @@ app.config["PERMANENT_SESSION_LIFETIME"] = 7200
 @app.before_request
 def handle_i18n():
     lang = request.args.get("lang")
-    if lang in ("en", "te"):
+    if lang in ("en", "hi", "te"):
         session["lang"] = lang
 
 
@@ -1007,9 +1007,110 @@ def api_application_status():
     ))
 
 
+@app.route("/assistant")
+def assistant():
+    """Interactive citizen AI Assistant interface with Hindi & English support."""
+    return render_template("assistant.html")
+
+
+@app.route("/api/openapi.json", methods=["GET"])
+def api_openapi_json():
+    """Authoritative OpenAPI 3.1 specification for ChatGPT Custom GPT Actions."""
+    return jsonify({
+        "openapi": "3.1.0",
+        "info": {
+            "title": "Sewa Setu Citizen Pension Services API",
+            "description": "Authoritative citizen pension services for the Old Age Pension Scheme, Department of Social Welfare, Government of Purvanchal.",
+            "version": "1.0.0"
+        },
+        "servers": [
+            {"url": "https://sewasetu-ai.onrender.com"}
+        ],
+        "paths": {
+            "/api/scheme-information": {
+                "get": {
+                    "summary": "Authoritative Scheme Information",
+                    "operationId": "getSchemeInformation",
+                    "description": "Returns pension rules, minimum age, monthly amount, SLA days, and active pilot blocks.",
+                    "responses": {"200": {"description": "Scheme details"}}
+                }
+            },
+            "/api/supported-blocks": {
+                "get": {
+                    "summary": "Supported AI Pilot Blocks",
+                    "operationId": "getSupportedBlocks",
+                    "description": "Returns list of administrative blocks active in the AI pilot.",
+                    "responses": {"200": {"description": "List of pilot blocks"}}
+                }
+            },
+            "/api/otp/send": {
+                "post": {
+                    "summary": "Send Mobile OTP",
+                    "operationId": "sendMobileOtp",
+                    "description": "Requests a 6-digit OTP to applicant mobile number.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"type": "object", "properties": {"mobile": {"type": "string"}}, "required": ["mobile"]}}}
+                    },
+                    "responses": {"200": {"description": "OTP delivery status"}}
+                }
+            },
+            "/api/otp/verify": {
+                "post": {
+                    "summary": "Verify Mobile OTP",
+                    "operationId": "verifyMobileOtp",
+                    "description": "Verifies 6-digit OTP code and returns session token.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"type": "object", "properties": {"mobile": {"type": "string"}, "otp": {"type": "string"}}, "required": ["mobile", "otp"]}}}
+                    },
+                    "responses": {"200": {"description": "Verification result and session token"}}
+                }
+            },
+            "/api/application/validate": {
+                "post": {
+                    "summary": "Validate Application Details",
+                    "operationId": "validateApplication",
+                    "description": "Validates applicant age, IFSC, bank account, and block eligibility.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"type": "object", "properties": {"applicant_name": {"type": "string"}, "dob": {"type": "string"}, "village": {"type": "string"}, "block": {"type": "string"}, "bank_account": {"type": "string"}, "ifsc": {"type": "string"}, "gender": {"type": "string"}, "marital_status": {"type": "string"}, "husband_name": {"type": "string"}}}}}
+                    },
+                    "responses": {"200": {"description": "Validation result"}}
+                }
+            },
+            "/api/application/submit": {
+                "post": {
+                    "summary": "Submit Pension Application",
+                    "operationId": "submitApplication",
+                    "description": "Finalizes and records the pension application into the official registry.",
+                    "requestBody": {
+                        "required": True,
+                        "content": {"application/json": {"schema": {"type": "object", "properties": {"applicant_name": {"type": "string"}, "dob": {"type": "string"}, "village": {"type": "string"}, "block": {"type": "string"}, "bank_account": {"type": "string"}, "ifsc": {"type": "string"}, "gender": {"type": "string"}, "marital_status": {"type": "string"}, "husband_name": {"type": "string"}, "session_token": {"type": "string"}}}}}
+                    },
+                    "responses": {"200": {"description": "Submission confirmation and application number"}}
+                }
+            },
+            "/api/application/status": {
+                "get": {
+                    "summary": "Check Application Status",
+                    "operationId": "checkApplicationStatus",
+                    "description": "Checks status of pension application by application number.",
+                    "parameters": [
+                        {"name": "application_no", "in": "query", "required": True, "schema": {"type": "string"}},
+                        {"name": "session_token", "in": "query", "required": False, "schema": {"type": "string"}}
+                    ],
+                    "responses": {"200": {"description": "Application status and statutory SLA tracking"}}
+                }
+            }
+        }
+    })
+
+
 from oauth import oauth as _oauth_blueprint   # noqa: E402  (needs the definitions above)
 app.register_blueprint(_oauth_blueprint)
 
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=False)
+

@@ -3,36 +3,67 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ t('portal_title') }}</title>
+<title>{{ t('portal_title') }} | Government of Purvanchal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --primary: #0b3d6e;
     --primary-hover: #082d52;
+    --primary-dark: #061e38;
     --accent: #f7931e;
-    --bg: #f4f6f9;
+    --accent-light: #fff8f0;
+    --ai-purple: #6366f1;
+    --ai-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --bg: #f4f6fa;
     --card-bg: #ffffff;
-    --text-dark: #1a202c;
-    --text-muted: #4a5568;
-    --border-color: #cbd5e0;
-    --danger: #c53030;
-    --danger-bg: #fff5f5;
-    --success: #22543d;
-    --success-bg: #f0fff4;
+    --text-dark: #1e293b;
+    --text-muted: #64748b;
+    --border-color: #e2e8f0;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
     --focus-ring: #f7931e;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(11,61,110,0.08);
+    --shadow-lg: 0 10px 25px rgba(11,61,110,0.12);
   }
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: 'Inter', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
     background: var(--bg);
     color: var(--text-dark);
-    font-size: 18px;
+    font-size: 17px;
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
   }
   a:focus, button:focus, input:focus, select:focus {
     outline: 3px solid var(--focus-ring) !important;
     outline-offset: 2px !important;
   }
+  .tricolor-strip {
+    height: 4px;
+    background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #138808 66.6%, #138808 100%);
+  }
+  .top-govt-bar {
+    background: #082442;
+    color: #cbd5e1;
+    padding: 6px 28px;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .top-govt-bar a {
+    color: #e2e8f0;
+    text-decoration: none;
+    margin-left: 14px;
+  }
+  .top-govt-bar a:hover { text-decoration: underline; }
   .header {
     background: var(--primary);
     color: #fff;
@@ -41,49 +72,106 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+  }
+  .emblem-badge {
+    background: #ffffff;
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    flex-shrink: 0;
   }
   .header-titles h1 {
     margin: 0;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.3px;
   }
   .header-titles .sub {
-    font-size: 14px;
-    color: #cfe0f3;
+    font-size: 13px;
+    color: #cbd5e1;
     margin-top: 2px;
+    font-weight: 500;
   }
   .header-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     flex-wrap: wrap;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+  }
+  .nav-link {
+    color: #e2e8f0;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+  }
+  .nav-link:hover {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+  .nav-link-ai {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .nav-link-ai:hover {
+    background: #f7931e;
+    color: #fff;
+    border-color: #f7931e;
   }
   .lang-toggle {
     display: flex;
-    gap: 8px;
-    background: rgba(255,255,255,0.15);
-    padding: 4px 8px;
+    gap: 4px;
+    background: rgba(255,255,255,0.12);
+    padding: 3px 4px;
     border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2);
   }
   .lang-toggle a {
-    color: #fff;
+    color: #e2e8f0;
     text-decoration: none;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 4px;
     font-size: 14px;
     font-weight: 600;
+    transition: all 0.15s ease;
+  }
+  .lang-toggle a:hover {
+    color: #fff;
   }
   .lang-toggle a.active {
-    background: #fff;
+    background: #ffffff;
     color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
   .btn-kiosk-exit {
-    background: #e53e3e;
+    background: #dc2626;
     color: #fff;
     border: none;
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 7px 14px;
+    font-size: 13px;
     font-weight: 600;
     border-radius: 6px;
     cursor: pointer;
@@ -92,113 +180,133 @@
     align-items: center;
     gap: 6px;
   }
-  .btn-kiosk-exit:hover { background: #c53030; }
-  .band {
-    background: var(--accent);
-    height: 6px;
-  }
+  .btn-kiosk-exit:hover { background: #b91c1c; }
   .main-wrapper {
-    max-width: 920px;
-    margin: 28px auto;
-    padding: 0 16px;
+    max-width: 1040px;
+    margin: 28px auto 48px;
+    padding: 0 18px;
   }
   .container {
     background: var(--card-bg);
-    padding: 32px;
+    padding: 36px 40px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
   }
   .btn {
     background: var(--primary);
     color: #fff;
     border: none;
-    padding: 12px 26px;
-    font-size: 17px;
+    padding: 12px 24px;
+    font-size: 16px;
     font-weight: 600;
     min-height: 48px;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s ease;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
   }
-  .btn:hover { background: var(--primary-hover); }
+  .btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
   .btn-secondary {
-    background: #4a5568;
+    background: #475569;
   }
-  .btn-secondary:hover { background: #2d3748; }
+  .btn-secondary:hover { background: #334155; }
+  .btn-accent {
+    background: #f7931e;
+    color: #ffffff;
+  }
+  .btn-accent:hover { background: #ea580c; }
+  .btn-ai {
+    background: var(--ai-gradient);
+    color: #ffffff;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  }
+  .btn-ai:hover {
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45);
+    transform: translateY(-2px);
+  }
   .btn-danger {
     background: var(--danger);
   }
-  .btn-danger:hover { background: #9b2c2c; }
+  .btn-danger:hover { background: #b91c1c; }
   label {
     display: block;
     margin: 18px 0 6px;
     font-weight: 700;
-    font-size: 17px;
-    color: #2d3748;
+    font-size: 16px;
+    color: #334155;
   }
   input[type=text], input[type=password], select {
     width: 100%;
     max-width: 500px;
     min-height: 48px;
     padding: 10px 14px;
-    border: 2px solid var(--border-color);
-    border-radius: 6px;
-    font-size: 17px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
     background: #fff;
     color: var(--text-dark);
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+  }
+  input[type=text]:focus, input[type=password]:focus, select:focus {
+    border-color: var(--primary);
   }
   input[type=file] {
-    font-size: 16px;
+    font-size: 15px;
     padding: 8px 0;
   }
   .flash {
     background: var(--danger-bg);
     border-left: 5px solid var(--danger);
-    color: #9b2c2c;
+    color: #991b1b;
     padding: 14px 18px;
-    margin-bottom: 22px;
-    border-radius: 4px;
+    margin-bottom: 24px;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
   }
   .flash.success {
     background: var(--success-bg);
     border-left-color: var(--success);
-    color: #22543d;
+    color: #166534;
   }
   .note {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--text-muted);
     margin-top: 6px;
   }
   .helper-box {
-    background: #ebf8ff;
-    border-left: 5px solid #3182ce;
-    padding: 14px 18px;
-    margin: 16px 0;
-    border-radius: 4px;
+    background: #eff6ff;
+    border-left: 5px solid #3b82f6;
+    padding: 16px 20px;
+    margin: 18px 0;
+    border-radius: 8px;
     font-size: 15px;
-    color: #2b6cb0;
+    color: #1e40af;
   }
-  /* Accessible step progress indicator */
   .step-progress-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #edf2f7;
-    border-radius: 8px;
-    padding: 12px 18px;
-    margin-bottom: 24px;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin-bottom: 26px;
     flex-wrap: wrap;
     gap: 8px;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 600;
-    color: #4a5568;
+    color: #64748b;
   }
   .step-progress-bar .active-step {
     color: var(--primary);
@@ -207,24 +315,25 @@
   table.tbl {
     border-collapse: collapse;
     width: 100%;
-    margin: 18px 0;
+    margin: 20px 0;
   }
   table.tbl td, table.tbl th {
     border: 1px solid var(--border-color);
-    padding: 10px 14px;
-    font-size: 16px;
+    padding: 12px 16px;
+    font-size: 15px;
     text-align: left;
   }
   table.tbl th {
-    background: #f7fafc;
+    background: #f8fafc;
     width: 35%;
     font-weight: 700;
+    color: #334155;
   }
   .footer {
-    max-width: 920px;
-    margin: 20px auto 40px;
+    max-width: 1040px;
+    margin: 32px auto 50px;
     font-size: 14px;
-    color: #718096;
+    color: #64748b;
     text-align: center;
     padding: 0 16px;
   }
@@ -232,26 +341,58 @@
     color: var(--primary);
     margin: 0 10px;
     text-decoration: underline;
+    font-weight: 500;
   }
-  @media (max-width: 600px) {
-    .container { padding: 20px; }
-    .header { padding: 14px; }
+  .footer-meta {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #94a3b8;
+  }
+  @media (max-width: 768px) {
+    .container { padding: 22px 18px; }
+    .header { padding: 14px 18px; }
+    .top-govt-bar { padding: 6px 18px; font-size: 12px; }
+    .nav-links { display: none; }
     input[type=text], input[type=password], select { max-width: 100%; }
-    .btn { width: 100%; justify-content: center; }
+    .btn { width: 100%; }
   }
 </style>
 </head>
 <body>
-<header class="header" role="banner">
-  <div class="header-titles">
-    <h1><a href="/" style="color:#fff; text-decoration:none;">{{ t('portal_title') }}</a></h1>
-    <div class="sub">{{ t('dept_name') }}</div>
+<div class="tricolor-strip"></div>
+<div class="top-govt-bar">
+  <div>
+    <span>🇮🇳 {{ t('dept_name') }}</span>
   </div>
-  <div class="header-actions">
-    <div class="lang-toggle" aria-label="Language selection">
-      <a href="?lang=en" class="{% if current_lang != 'te' %}active{% endif %}">English</a>
-      <a href="?lang=te" class="{% if current_lang == 'te' %}active{% endif %}">తెలుగు</a>
+  <div>
+    <a href="/admin">{% if current_lang == 'hi' %}अधिकारी लॉगिन{% else %}Officer Portal{% endif %}</a>
+    <a href="/assistant">{% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
+  </div>
+</div>
+
+<header class="header" role="banner">
+  <a href="/" class="header-brand">
+    <div class="emblem-badge" aria-hidden="true">🏛️</div>
+    <div class="header-titles">
+      <h1>{{ t('portal_title') }}</h1>
+      <div class="sub">{{ t('dept_name') }}</div>
     </div>
+  </a>
+
+  <div class="header-actions">
+    <nav class="nav-links" aria-label="Main Navigation">
+      <a href="/" class="nav-link">{{ t('home') }}</a>
+      <a href="/apply" class="nav-link">{{ t('apply_pension') }}</a>
+      <a href="/status" class="nav-link">{{ t('check_status') }}</a>
+      <a href="/assistant" class="nav-link nav-link-ai">🤖 {% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
+    </nav>
+
+    <div class="lang-toggle" aria-label="Language selection">
+      <a href="?lang=en" class="{% if current_lang == 'en' or current_lang not in ('hi', 'te') %}active{% endif %}" title="Switch to English">English</a>
+      <a href="?lang=hi" class="{% if current_lang == 'hi' %}active{% endif %}" title="हिन्दी में बदलें">हिन्दी</a>
+      <a href="?lang=te" class="{% if current_lang == 'te' %}active{% endif %}" title="తెలుగులోకి మార్చండి">తెలుగు</a>
+    </div>
+
     {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') %}
     <a href="/logout" class="btn-kiosk-exit" role="button" title="{{ t('clear_session') }}">
       &#x2715; {{ t('clear_session') }}
@@ -259,7 +400,6 @@
     {% endif %}
   </div>
 </header>
-<div class="band"></div>
 
 <main class="main-wrapper" role="main">
   <div class="container">
@@ -279,10 +419,15 @@
     <a href="/">{{ t('home') }}</a> &middot;
     <a href="/apply">{{ t('apply_pension') }}</a> &middot;
     <a href="/status">{{ t('check_status') }}</a> &middot;
+    <a href="/assistant">{% if current_lang == 'hi' %}सेवा सेतु एआई सहायक{% else %}AI Pension Assistant{% endif %}</a> &middot;
     <a href="/about">{{ t('about_scheme') }}</a> &middot;
+    <a href="/admin">{% if current_lang == 'hi' %}अधिकारी पोर्टल{% else %}Officer Portal{% endif %}</a> &middot;
     <a href="/logout" style="color:var(--danger);">{{ t('clear_session') }}</a>
   </p>
   <p>{{ t('footer_text') }}</p>
+  <div class="footer-meta">
+    Purvanchal Right to Public Services (RTPS) Act 2024 &middot; 15-Day Statutory Deemed Approval &middot; Aadhaar Direct Benefit Transfer (DBT)
+  </div>
 </footer>
 </body>
 </html>
