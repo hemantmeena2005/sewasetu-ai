@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>Sewa Setu AI — System Evaluation &amp; Verification Console</title>
+  <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+  <link rel="shortcut icon" href="/static/favicon.ico">
+  <meta name="theme-color" content="#0a0f1d">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -606,6 +612,66 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       display: none;
       z-index: 9999;
+    }
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      .eval-header {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .eval-brand {
+        width: 100%;
+      }
+      .brand-text h1 {
+        font-size: 16px;
+        flex-wrap: wrap;
+      }
+      .eval-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .eval-actions .btn-action {
+        justify-content: center;
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+      .eval-container {
+        padding: 16px 12px 36px;
+      }
+      .kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .kpi-card {
+        padding: 16px;
+      }
+      .kpi-value {
+        font-size: 26px;
+      }
+      .chart-panel {
+        padding: 16px;
+      }
+      .chart-container {
+        min-height: 230px;
+      }
+      .stream-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .stream-search {
+        width: 100%;
+      }
+      .suite-summary-row {
+        padding: 14px 14px;
+      }
+      .suite-info {
+        min-width: 100%;
+      }
     }
   </style>
 </head>

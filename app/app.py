@@ -82,6 +82,15 @@ def logout():
     flash(i18n.get_translation("session_cleared_msg", lang), "success")
     return redirect(url_for("index"))
 
+
+@app.route("/favicon.ico")
+def favicon():
+    fav_path = os.path.join(BASE_DIR, "static", "favicon.ico")
+    if os.path.exists(fav_path):
+        return send_file(fav_path, mimetype="image/vnd.microsoft.icon")
+    return ("", 204)
+
+
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 

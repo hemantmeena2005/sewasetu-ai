@@ -32,31 +32,78 @@
     overflow: hidden;
   }
   {% if is_embed %}
-  body {
+  html, body {
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
     background: #f8fafc !important;
   }
   .main-wrapper {
     margin: 0 !important;
     padding: 0 !important;
     max-width: 100% !important;
+    height: 100% !important;
   }
   .container {
-    padding: 8px 10px !important;
+    padding: 12px 14px 10px !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     background: transparent !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    box-sizing: border-box !important;
   }
   .assistant-header {
     display: none !important;
   }
   .assistant-container {
     max-width: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 !important;
   }
   .chat-box {
-    min-height: calc(100vh - 130px) !important;
-    max-height: calc(100vh - 130px) !important;
-    padding: 14px 10px !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+    overflow-y: auto !important;
+  }
+  .msg-bubble {
+    max-width: 92% !important;
+    padding: 14px 18px !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+  }
+  .prompt-chips-wrapper {
+    margin: 10px 0 6px !important;
+  }
+  .prompt-label {
+    font-size: 11.5px !important;
+    margin-bottom: 6px !important;
+  }
+  .prompt-chip-btn {
+    padding: 7px 12px !important;
+    font-size: 13px !important;
+  }
+  .chat-input-bar {
+    margin-top: 8px !important;
+    gap: 8px !important;
+  }
+  .chat-input-bar input {
+    min-height: 46px !important;
+    font-size: 15px !important;
+    padding: 10px 14px !important;
+  }
+  .chat-input-bar .btn-ai {
+    min-height: 44px !important;
+    font-size: 15px !important;
   }
   {% endif %}
   .assistant-info h2 {
