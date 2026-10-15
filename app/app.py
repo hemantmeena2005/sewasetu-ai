@@ -863,6 +863,29 @@ def api_otp_verify():
     return jsonify(mcp_citizen.verify_mobile_otp(mobile=mobile, otp=otp))
 
 
+@app.route("/api/otp/latest", methods=["GET"])
+def api_otp_latest():
+    """Retrieve latest generated OTP for test inspection."""
+    mobile = request.args.get("mobile", "").strip()
+    conn = services.get_db()
+    cur = conn.cursor()
+    if mobile:
+        cur.execute("SELECT mobile, code, created_at FROM otps WHERE mobile = %s ORDER BY id DESC LIMIT 1", (mobile,))
+    else:
+        cur.execute("SELECT mobile, code, created_at FROM otps ORDER BY id DESC LIMIT 1")
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if row:
+        return jsonify({
+            "success": True,
+            "mobile": row[0],
+            "code": row[1],
+            "created_at": str(row[2])
+        })
+    return jsonify({"success": False, "error": "No OTP found."}), 404
+
+
 @app.route("/api/application/validate", methods=["POST"])
 def api_application_validate():
     """Validate application data prior to submission."""
