@@ -179,6 +179,40 @@
     color: var(--primary);
     box-shadow: 0 1px 3px rgba(0,0,0,0.15);
   }
+  .btn-header-login {
+    background: #f7931e;
+    color: #ffffff;
+    border: none;
+    padding: 7px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .btn-header-login:hover { background: #ea580c; color: #ffffff; }
+  .btn-header-logout {
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    padding: 7px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  }
+  .btn-header-logout:hover { background: #b91c1c; color: #ffffff; }
   .btn-kiosk-exit {
     background: #dc2626;
     color: #fff;
@@ -194,6 +228,108 @@
     gap: 6px;
   }
   .btn-kiosk-exit:hover { background: #b91c1c; }
+
+  /* Mobile Hamburger Toggle Bar */
+  .mobile-menu-toggle {
+    display: none;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 26px;
+    cursor: pointer;
+    line-height: 1;
+    transition: background 0.15s ease;
+  }
+  .mobile-menu-toggle:hover { background: rgba(255, 255, 255, 0.25); }
+  .mobile-nav-drawer {
+    display: none;
+    background: #082442;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 14px 18px 20px;
+  }
+  .mobile-nav-drawer.is-open {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .mobile-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mobile-nav-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 15.5px;
+    font-weight: 600;
+    padding: 12px 14px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background 0.15s ease;
+  }
+  .mobile-nav-link:hover, .mobile-nav-link.active {
+    background: rgba(255, 255, 255, 0.12);
+  }
+  .mobile-lang-row {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .mobile-lang-pill {
+    flex: 1;
+    text-align: center;
+    padding: 10px 4px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+  }
+  .mobile-lang-pill.active {
+    background: #ffffff;
+    color: var(--primary);
+    font-weight: 700;
+  }
+  .mobile-btn-login {
+    background: #f7931e;
+    color: #ffffff;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .mobile-btn-logout {
+    background: #dc2626;
+    color: #ffffff;
+    padding: 13px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
   .main-wrapper {
     max-width: 1040px;
     margin: 28px auto 48px;
@@ -604,35 +740,38 @@
   /* Site-wide Mobile Responsiveness */
   @media (max-width: 900px) {
     .header {
-      padding: 12px 18px;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
+      padding: 8px 16px;
+      min-height: 56px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
     }
     .header-brand {
-      width: 100%;
-    }
-    .header-titles h1 { font-size: 19px; }
-    .header-titles .sub { font-size: 12px; }
-    .emblem-badge { width: 44px; height: 44px; font-size: 22px; }
-    .header-actions {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
       gap: 10px;
     }
-    .nav-links {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      white-space: nowrap;
-      scrollbar-width: none;
-      padding-bottom: 4px;
-      display: flex;
-      gap: 6px;
+    .emblem-badge {
+      width: 38px;
+      height: 38px;
+      font-size: 20px;
     }
-    .nav-links::-webkit-scrollbar { display: none; }
-    .nav-link { font-size: 14px; padding: 7px 12px; flex-shrink: 0; }
+    .header-titles h1 {
+      font-size: 16px;
+      line-height: 1.2;
+    }
+    .header-titles .sub {
+      display: none;
+    }
+    .desktop-nav-actions {
+      display: none !important;
+    }
+    .mobile-menu-toggle {
+      display: flex !important;
+    }
+    .top-govt-bar {
+      padding: 4px 14px;
+      font-size: 11.5px;
+    }
   }
 
   @media (max-width: 768px) {
@@ -745,7 +884,8 @@
       </div>
     </a>
 
-    <div class="header-actions">
+    <!-- Desktop Navigation Actions -->
+    <div class="header-actions desktop-nav-actions">
       <nav class="nav-links" aria-label="Main Navigation">
         <a href="/" class="nav-link">{{ t('home') }}</a>
         <a href="/apply" class="nav-link">{{ t('apply_pension') }}</a>
@@ -759,13 +899,70 @@
         <a href="?lang=te" class="{% if current_lang == 'te' %}active{% endif %}" title="తెలుగులోకి మార్చండి">తెలుగు</a>
       </div>
 
-      {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') %}
-      <a href="/logout" class="btn-kiosk-exit" role="button" title="{{ t('clear_session') }}">
-        &#x2715; {{ t('clear_session') }}
+      {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') or session.get('admin') %}
+      <a href="/logout" class="btn-header-logout" role="button" title="Logout">
+        🚪 {% if current_lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+      </a>
+      {% else %}
+      <a href="/status" class="btn-header-login" role="button" title="Login">
+        🔑 {% if current_lang == 'hi' %}लॉगिन{% else %}Login{% endif %}
       </a>
       {% endif %}
     </div>
+
+    <!-- Mobile Hamburger Toggle Bar Button -->
+    <button type="button" class="mobile-menu-toggle" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Toggle Navigation Menu" aria-expanded="false">
+      &#9776;
+    </button>
   </header>
+
+  <!-- Mobile Dropdown Drawer -->
+  <div class="mobile-nav-drawer" id="mobile-nav-drawer" aria-hidden="true">
+    <div class="mobile-nav-links">
+      <a href="/" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>🏠 {{ t('home') }}</span>
+        <span>&rsaquo;</span>
+      </a>
+      <a href="/apply" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>📝 {{ t('apply_pension') }}</span>
+        <span>&rsaquo;</span>
+      </a>
+      <a href="/status" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>🔍 {{ t('check_status') }}</span>
+        <span>&rsaquo;</span>
+      </a>
+      <a href="/assistant" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>🤖 {% if current_lang == 'hi' %}एआई सहायक{% else %}AI Pension Assistant{% endif %}</span>
+        <span>&rsaquo;</span>
+      </a>
+      <a href="/admin" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>🏛️ {% if current_lang == 'hi' %}अधिकारी पोर्टल{% else %}Officer Portal{% endif %}</span>
+        <span>&rsaquo;</span>
+      </a>
+      <a href="/evaluation" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>📊 {% if current_lang == 'hi' %}मूल्यांकन डैशबोर्ड{% else %}Evaluation Dashboard{% endif %}</span>
+        <span>&rsaquo;</span>
+      </a>
+    </div>
+
+    <!-- Mobile Language Selection -->
+    <div class="mobile-lang-row">
+      <a href="?lang=en" class="mobile-lang-pill {% if current_lang == 'en' or current_lang not in ('hi', 'te') %}active{% endif %}">English</a>
+      <a href="?lang=hi" class="mobile-lang-pill {% if current_lang == 'hi' %}active{% endif %}">हिन्दी</a>
+      <a href="?lang=te" class="mobile-lang-pill {% if current_lang == 'te' %}active{% endif %}">తెలుగు</a>
+    </div>
+
+    <!-- Mobile Login / Logout Button -->
+    {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') or session.get('admin') %}
+    <a href="/logout" class="mobile-btn-logout" role="button">
+      🚪 {% if current_lang == 'hi' %}लॉग आउट (Logout){% else %}Logout{% endif %}
+    </a>
+    {% else %}
+    <a href="/status" class="mobile-btn-login" role="button">
+      🔑 {% if current_lang == 'hi' %}नागरिक लॉगिन (Login){% else %}Citizen Login{% endif %}
+    </a>
+    {% endif %}
+  </div>
 </div>
 {% endif %}
 
@@ -793,7 +990,11 @@
     <a href="/privacy">{% if current_lang == 'hi' %}गोपनीयता नीति{% else %}Privacy Policy{% endif %}</a> &middot;
     <a href="/admin">{% if current_lang == 'hi' %}अधिकारी पोर्टल{% else %}Officer Portal{% endif %}</a> &middot;
     <a href="/evaluation" style="color:var(--accent); font-weight:700;">📊 {% if current_lang == 'hi' %}मूल्यांकन डैशबोर्ड{% else %}Evaluation Dashboard{% endif %}</a> &middot;
-    <a href="/logout" style="color:var(--danger);">{{ t('clear_session') }}</a>
+    {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') or session.get('admin') %}
+    <a href="/logout" style="color:var(--danger); font-weight:700;">🚪 {% if current_lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}</a>
+    {% else %}
+    <a href="/status" style="color:var(--primary); font-weight:700;">🔑 {% if current_lang == 'hi' %}लॉगिन{% else %}Login{% endif %}</a>
+    {% endif %}
   </p>
   <p>{{ t('footer_text') }}</p>
   <div class="footer-meta">
@@ -925,6 +1126,17 @@
     var chatView = document.getElementById('lg-chat-view');
     chatView.style.display = 'none';
     menuView.style.display = 'block';
+  }
+
+  function toggleMobileMenu() {
+    var drawer = document.getElementById('mobile-nav-drawer');
+    var btn = document.getElementById('mobile-menu-btn');
+    if (!drawer) return;
+    var isOpen = drawer.classList.toggle('is-open');
+    if (btn) {
+      btn.innerHTML = isOpen ? '&times;' : '&#9776;';
+      btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
   }
 </script>
 {% endif %}
