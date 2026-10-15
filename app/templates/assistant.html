@@ -287,13 +287,19 @@
 
       var otpMsg = isHindi ?
         '📲 <strong>ओटीपी भेजा गया!</strong> हमने आपके मोबाइल <strong>' + mobileNumber + '</strong> पर 6-अंकीय सत्यापन कोड भेजा है।<br>' +
-        '<span style="display:inline-block; margin:8px 0; padding:6px 12px; background:#fef3c7; color:#92400e; border-radius:6px; font-weight:700;">' +
-        '🔑 परीक्षण कोड (Test OTP): <code>' + otpCode + '</code></span><br>' +
-        'कृपया जारी रखने के लिए 6-अंकीय ओटीपी कोड यहाँ टाइप करें (उदा. <code>' + otpCode + '</code>):' :
+        '<div style="margin:8px 0; padding:10px 14px; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px;">' +
+        '🔑 <strong>परीक्षण कोड (Test OTP):</strong> <code style="font-size:16px; font-weight:800;">' + otpCode + '</code><br>' +
+        '<button type="button" class="btn btn-ai" style="margin-top:8px; padding:6px 14px; font-size:13px; min-height:auto;" onclick="verifyOtpInput(\'' + otpCode + '\')">' +
+        '✓ यह ओटीपी स्वतः सत्यापित करें (' + otpCode + ')' +
+        '</button></div>' +
+        'अथवा नीचे 6-अंकीय ओटीपी टाइप करके भेजें:' :
         '📲 <strong>OTP Sent!</strong> We have dispatched a 6-digit verification code to <strong>' + mobileNumber + '</strong>.<br>' +
-        '<span style="display:inline-block; margin:8px 0; padding:6px 12px; background:#fef3c7; color:#92400e; border-radius:6px; font-weight:700;">' +
-        '🔑 Test OTP Code: <code>' + otpCode + '</code></span><br>' +
-        'Please enter the 6-digit OTP code to verify your mobile:';
+        '<div style="margin:8px 0; padding:10px 14px; background:#fef3c7; border:1px solid #fcd34d; border-radius:8px;">' +
+        '🔑 <strong>Test OTP Code:</strong> <code style="font-size:16px; font-weight:800;">' + otpCode + '</code><br>' +
+        '<button type="button" class="btn btn-ai" style="margin-top:8px; padding:6px 14px; font-size:13px; min-height:auto;" onclick="verifyOtpInput(\'' + otpCode + '\')">' +
+        '✓ Click to Verify OTP (' + otpCode + ')' +
+        '</button></div>' +
+        'Or type the 6-digit code below:';
 
       appendMessage('bot', otpMsg);
     } catch (err) {
@@ -313,7 +319,7 @@
       });
       var data = await resp.json();
 
-      if (data.success) {
+      if (data.verified || data.success) {
         appState.sessionToken = data.session_token;
         appState.step = 'AWAITING_DETAILS';
 
@@ -324,7 +330,7 @@
           'अथवा त्वरित परीक्षण के लिए नीचे दिए गए बटन पर क्लिक करें:' :
           '✅ <strong>Mobile number ' + appState.mobile + ' verified successfully!</strong><br><br>' +
           'Now please provide the applicant details. You can enter them in one line, for example:<br>' +
-          '<code>Name: Bina Baruah, DOB: 15/08/1958, Block: Sonari, Bank: 918273645012, IFSC: SBIN0001234</code><br><br>' +
+          '<code>Name: Bina Saikia, DOB: 15/08/1958, Block: Sonari, Bank: 918273645012, IFSC: SBIN0001234</code><br><br>' +
           'Or click below to auto-fill sample eligible details for Sonari block:';
 
         var autofillBtn = '<div style="margin-top:10px;">' +

@@ -856,7 +856,12 @@ def api_otp_verify():
     data = request.get_json(force=True, silent=True) or {}
     mobile = str(data.get("mobile", "")).strip()
     otp = str(data.get("otp", "")).strip()
-    return jsonify(mcp_citizen.verify_mobile_otp(mobile=mobile, otp=otp))
+    res = mcp_citizen.verify_mobile_otp(mobile=mobile, otp=otp)
+    if res.get("verified"):
+        res["success"] = True
+    else:
+        res["success"] = False
+    return jsonify(res)
 
 
 @app.route("/api/otp/latest", methods=["GET"])
