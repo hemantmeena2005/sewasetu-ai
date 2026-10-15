@@ -569,6 +569,8 @@ def reset_password():
 # Admin
 # ---------------------------------------------------------------------------
 
+@app.route("/officer", methods=["GET", "POST"])
+@app.route("/officer/login", methods=["GET", "POST"])
 @app.route("/admin", methods=["GET", "POST"])
 def admin_login():
     if request.method == "POST":
