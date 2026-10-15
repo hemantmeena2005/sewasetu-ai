@@ -44,6 +44,14 @@
     outline: 3px solid var(--focus-ring) !important;
     outline-offset: 2px !important;
   }
+  .sticky-nav-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    box-shadow: 0 4px 14px rgba(11, 61, 110, 0.16);
+    background: var(--primary);
+  }
   .tricolor-strip {
     height: 4px;
     background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #138808 66.6%, #138808 100%);
@@ -67,19 +75,18 @@
   .header {
     background: var(--primary);
     color: #fff;
-    padding: 16px 28px;
+    padding: 12px 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
     gap: 16px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
   }
   .header-brand {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     text-decoration: none;
+    flex-shrink: 0;
   }
   .emblem-badge {
     background: #ffffff;
@@ -348,58 +355,260 @@
     font-size: 13px;
     color: #94a3b8;
   }
+  /* Floating AI Assistant Chatbot Styles */
+  .chatbot-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .chatbot-fab:hover {
+    transform: scale(1.06) translateY(-2px);
+  }
+  .chatbot-avatar-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    padding: 3px;
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45), 0 2px 8px rgba(0,0,0,0.18);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: chatbot-pulse 3s infinite ease-in-out;
+  }
+  @keyframes chatbot-pulse {
+    0%, 100% { box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45); }
+    50% { box-shadow: 0 10px 32px rgba(79, 70, 229, 0.7), 0 0 0 8px rgba(99, 102, 241, 0.16); }
+  }
+  .chatbot-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    background: #ffffff;
+  }
+  .chatbot-status-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 3px solid #ffffff;
+  }
+  .chatbot-fab-callout {
+    background: #ffffff;
+    color: #1e293b;
+    padding: 9px 18px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 700;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.16);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    animation: chatbot-fade-in 0.4s ease;
+  }
+  .callout-badge {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.5px;
+  }
+  .chatbot-modal {
+    position: fixed;
+    bottom: 96px;
+    right: 24px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    height: 600px;
+    max-height: calc(100vh - 120px);
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow: 0 20px 45px rgba(11, 61, 110, 0.25), 0 4px 14px rgba(0,0,0,0.12);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: chatbot-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes chatbot-slide-up {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .chatbot-modal-header {
+    background: linear-gradient(135deg, #0b3d6e 0%, #1e40af 100%);
+    color: #ffffff;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .chatbot-modal-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .chatbot-modal-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255,255,255,0.85);
+    background: #fff;
+  }
+  .chatbot-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+  .chatbot-modal-sub {
+    font-size: 12px;
+    color: #cbd5e1;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .online-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+  }
+  .chatbot-modal-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chatbot-control-btn {
+    background: rgba(255,255,255,0.15);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+  .chatbot-control-btn:hover {
+    background: rgba(255,255,255,0.3);
+    color: #ffffff;
+  }
+  .chatbot-modal-body {
+    flex: 1;
+    background: #f8fafc;
+    position: relative;
+    overflow: hidden;
+  }
+  .chatbot-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+  @media (max-width: 900px) {
+    .header { padding: 10px 18px; flex-wrap: wrap; }
+    .header-titles h1 { font-size: 18px; }
+    .header-titles .sub { font-size: 11px; }
+    .emblem-badge { width: 40px; height: 40px; font-size: 20px; }
+    .nav-links { gap: 4px; flex-wrap: wrap; }
+    .nav-link { font-size: 13px; padding: 5px 8px; }
+  }
   @media (max-width: 768px) {
     .container { padding: 22px 18px; }
-    .header { padding: 14px 18px; }
     .top-govt-bar { padding: 6px 18px; font-size: 12px; }
-    .nav-links { display: none; }
     input[type=text], input[type=password], select { max-width: 100%; }
     .btn { width: 100%; }
+  }
+  @media (max-width: 600px) {
+    .chatbot-modal {
+      bottom: 0;
+      right: 0;
+      width: 100vw;
+      max-width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+    }
+    .chatbot-fab {
+      bottom: 18px;
+      right: 18px;
+    }
+    .chatbot-fab-callout {
+      display: none;
+    }
   }
 </style>
 </head>
 <body>
-<div class="tricolor-strip"></div>
-<div class="top-govt-bar">
-  <div>
-    <span>🇮🇳 {{ t('dept_name') }}</span>
-  </div>
-  <div>
-    <a href="/admin">{% if current_lang == 'hi' %}अधिकारी लॉगिन{% else %}Officer Portal{% endif %}</a>
-    <a href="/assistant">{% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
-  </div>
-</div>
-
-<header class="header" role="banner">
-  <a href="/" class="header-brand">
-    <div class="emblem-badge" aria-hidden="true">🏛️</div>
-    <div class="header-titles">
-      <h1>{{ t('portal_title') }}</h1>
-      <div class="sub">{{ t('dept_name') }}</div>
+{% if not is_embed %}
+<div class="sticky-nav-wrapper">
+  <div class="tricolor-strip"></div>
+  <div class="top-govt-bar">
+    <div>
+      <span>🇮🇳 {{ t('dept_name') }}</span>
     </div>
-  </a>
-
-  <div class="header-actions">
-    <nav class="nav-links" aria-label="Main Navigation">
-      <a href="/" class="nav-link">{{ t('home') }}</a>
-      <a href="/apply" class="nav-link">{{ t('apply_pension') }}</a>
-      <a href="/status" class="nav-link">{{ t('check_status') }}</a>
-      <a href="/assistant" class="nav-link nav-link-ai">🤖 {% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
-    </nav>
-
-    <div class="lang-toggle" aria-label="Language selection">
-      <a href="?lang=en" class="{% if current_lang == 'en' or current_lang not in ('hi', 'te') %}active{% endif %}" title="Switch to English">English</a>
-      <a href="?lang=hi" class="{% if current_lang == 'hi' %}active{% endif %}" title="हिन्दी में बदलें">हिन्दी</a>
-      <a href="?lang=te" class="{% if current_lang == 'te' %}active{% endif %}" title="తెలుగులోకి మార్చండి">తెలుగు</a>
+    <div>
+      <a href="/admin">{% if current_lang == 'hi' %}अधिकारी लॉगिन{% else %}Officer Portal{% endif %}</a>
+      <a href="/assistant">{% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
     </div>
+  </div>
 
-    {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') %}
-    <a href="/logout" class="btn-kiosk-exit" role="button" title="{{ t('clear_session') }}">
-      &#x2715; {{ t('clear_session') }}
+  <header class="header" role="banner">
+    <a href="/" class="header-brand">
+      <div class="emblem-badge" aria-hidden="true">🏛️</div>
+      <div class="header-titles">
+        <h1>{{ t('portal_title') }}</h1>
+        <div class="sub">{{ t('dept_name') }}</div>
+      </div>
     </a>
-    {% endif %}
-  </div>
-</header>
+
+    <div class="header-actions">
+      <nav class="nav-links" aria-label="Main Navigation">
+        <a href="/" class="nav-link">{{ t('home') }}</a>
+        <a href="/apply" class="nav-link">{{ t('apply_pension') }}</a>
+        <a href="/status" class="nav-link">{{ t('check_status') }}</a>
+        <a href="/assistant" class="nav-link nav-link-ai">🤖 {% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
+      </nav>
+
+      <div class="lang-toggle" aria-label="Language selection">
+        <a href="?lang=en" class="{% if current_lang == 'en' or current_lang not in ('hi', 'te') %}active{% endif %}" title="Switch to English">English</a>
+        <a href="?lang=hi" class="{% if current_lang == 'hi' %}active{% endif %}" title="हिन्दी में बदलें">हिन्दी</a>
+        <a href="?lang=te" class="{% if current_lang == 'te' %}active{% endif %}" title="తెలుగులోకి మార్చండి">తెలుగు</a>
+      </div>
+
+      {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') %}
+      <a href="/logout" class="btn-kiosk-exit" role="button" title="{{ t('clear_session') }}">
+        &#x2715; {{ t('clear_session') }}
+      </a>
+      {% endif %}
+    </div>
+  </header>
+</div>
+{% endif %}
 
 <main class="main-wrapper" role="main">
   <div class="container">
@@ -414,6 +623,7 @@
   </div>
 </main>
 
+{% if not is_embed %}
 <footer class="footer" role="contentinfo">
   <p>
     <a href="/">{{ t('home') }}</a> &middot;
@@ -430,5 +640,66 @@
     Purvanchal Right to Public Services (RTPS) Act 2024 &middot; 15-Day Statutory Deemed Approval &middot; Aadhaar Direct Benefit Transfer (DBT)
   </div>
 </footer>
+
+{% if request.path != '/assistant' %}
+<!-- Floating AI Assistant Chatbot Widget (Bottom Right) -->
+<div id="sewasetu-chatbot-fab" class="chatbot-fab" onclick="toggleChatbot()" title="Chat with AI Assistant" aria-label="Open AI Pension Chatbot">
+  <div class="chatbot-fab-callout" id="chatbot-fab-callout">
+    <span class="callout-badge">AI 24/7</span>
+    <span class="callout-text">{% if current_lang == 'hi' %}सहायता चाहिए? चैट करें{% else %}Need Help? Chat with AI{% endif %}</span>
+  </div>
+  <div class="chatbot-avatar-circle">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfBjUGlVk0m0R4Zw0cm_-PwRUDaVK-pV86W8gaKIeFxw&s=10"
+         onerror="this.src='/static/chatbot_avatar.png'"
+         alt="Sewa Setu AI Assistant" class="chatbot-avatar-img">
+    <span class="chatbot-status-dot" title="Online"></span>
+  </div>
+</div>
+
+<!-- Chatbot Popup Modal Window -->
+<div id="sewasetu-chatbot-modal" class="chatbot-modal" style="display:none;" aria-hidden="true">
+  <div class="chatbot-modal-header">
+    <div class="chatbot-modal-header-brand">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfBjUGlVk0m0R4Zw0cm_-PwRUDaVK-pV86W8gaKIeFxw&s=10"
+           onerror="this.src='/static/chatbot_avatar.png'"
+           alt="AI Assistant" class="chatbot-modal-avatar">
+      <div>
+        <div class="chatbot-modal-title">{% if current_lang == 'hi' %}सेवा सेतु एआई सहायक{% else %}Sewa Setu AI Assistant{% endif %}</div>
+        <div class="chatbot-modal-sub">
+          <span class="online-indicator"></span> {% if current_lang == 'hi' %}सक्रिय मार्गदर्शक · 24/7 लाइव{% else %}Active Guide &middot; 24/7 Live{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="chatbot-modal-controls">
+      <a href="/assistant" target="_blank" title="Open full screen in new tab" class="chatbot-control-btn" aria-label="Full screen">
+        ↗
+      </a>
+      <button type="button" onclick="toggleChatbot()" title="Close chat" class="chatbot-control-btn" aria-label="Close chat">
+        &times;
+      </button>
+    </div>
+  </div>
+  <div class="chatbot-modal-body">
+    <iframe src="/assistant?embed=1" title="Sewa Setu AI Chatbot" class="chatbot-iframe"></iframe>
+  </div>
+</div>
+
+<script>
+  function toggleChatbot() {
+    var modal = document.getElementById('sewasetu-chatbot-modal');
+    var callout = document.getElementById('chatbot-fab-callout');
+    if (!modal) return;
+    if (modal.style.display === 'none' || modal.style.display === '') {
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      if (callout) callout.style.display = 'none';
+    } else {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+</script>
+{% endif %}
+{% endif %}
 </body>
 </html>

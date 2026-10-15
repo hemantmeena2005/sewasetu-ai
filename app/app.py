@@ -1262,7 +1262,8 @@ def api_application_status():
 @app.route("/assistant")
 def assistant():
     """Interactive citizen AI Assistant interface with Hindi & English support."""
-    return render_template("assistant.html")
+    is_embed = request.args.get("embed") == "1"
+    return render_template("assistant.html", is_embed=is_embed)
 
 
 @app.route("/privacy")
