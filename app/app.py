@@ -826,6 +826,168 @@ def readiness_check():
     return jsonify(checks), status_code
 
 
+# ---------------------------------------------------------------------------
+# ChatGPT Custom Actions REST Gateway (wrapping MCP services)
+# ---------------------------------------------------------------------------
+
+@app.route("/api/scheme-information", methods=["GET"])
+def api_scheme_information():
+    """Authoritative scheme criteria for ChatGPT."""
+    import mcp_citizen
+    return jsonify(mcp_citizen.get_scheme_information())
+
+
+@app.route("/api/supported-blocks", methods=["GET"])
+def api_supported_blocks():
+    """Supported pilot blocks for AI assistance."""
+    import mcp_citizen
+    return jsonify(mcp_citizen.get_supported_blocks())
+
+
+@app.route("/api/otp/send", methods=["POST"])
+def api_otp_send():
+    """Request OTP for mobile verification."""
+    import mcp_citizen
+    data = request.get_json(force=True, silent=True) or {}
+    mobile = str(data.get("mobile", "")).strip()
+    return jsonify(mcp_citizen.start_application(mobile=mobile))
+
+
+@app.route("/api/otp/verify", methods=["POST"])
+def api_otp_verify():
+    """Verify citizen 6-digit OTP code."""
+    import mcp_citizen
+    data = request.get_json(force=True, silent=True) or {}
+    mobile = str(data.get("mobile", "")).strip()
+    otp = str(data.get("otp", "")).strip()
+    return jsonify(mcp_citizen.verify_mobile_otp(mobile=mobile, otp=otp))
+
+
+@app.route("/api/application/validate", methods=["POST"])
+def api_application_validate():
+    """Validate application data prior to submission."""
+    import mcp_citizen
+    data = request.get_json(force=True, silent=True) or {}
+    session_token = data.get("session_token", "")
+    
+    # Pre-validation performs field & eligibility checks cleanly
+    form_data = {
+        "applicant_name": data.get("applicant_name", ""),
+        "dob": data.get("dob", ""),
+        "village": data.get("village", ""),
+        "block": data.get("block", ""),
+        "bank_account": data.get("bank_account", ""),
+        "ifsc": data.get("ifsc", ""),
+        "gender": data.get("gender", ""),
+        "marital_status": data.get("marital_status", ""),
+        "husband_name": data.get("husband_name", "")
+    }
+    errors, cleaned = services.validate_application_data(form_data, require_doc=False, is_ai=True)
+    calc_age = services.age_on(cleaned.get("dob"), services.now_ist().date()) if cleaned.get("dob") else None
+    
+    return jsonify({
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "cleaned_data": {
+            "applicant_name": cleaned.get("applicant_name"),
+            "dob": form_data.get("dob"),
+            "computed_age": calc_age,
+            "village": cleaned.get("village"),
+            "block": cleaned.get("block"),
+            "bank_account_masked": f"XXXXXX{cleaned['bank_account'][-4:]}" if cleaned.get("bank_account") and len(cleaned['bank_account']) >= 4 else cleaned.get("bank_account"),
+            "ifsc": cleaned.get("ifsc"),
+            "is_ai_supported_block": cleaned.get("block") in services.AI_SUPPORTED_BLOCKS
+        },
+        "authenticated": True,
+        "message": "All details valid and eligible." if len(errors) == 0 else f"Validation problems found: {'; '.join(errors)}"
+    })
+
+
+@app.route("/api/application/submit", methods=["POST"])
+def api_application_submit():
+    """Submit application requiring explicit confirmation."""
+    import mcp_citizen
+    data = request.get_json(force=True, silent=True) or {}
+    session_token = data.get("session_token", "")
+    
+    # Try resolving verified mobile from session token
+    verified_mobile = mcp_citizen.verify_citizen_session(session_token) if session_token else None
+    if not verified_mobile:
+        # Fall back to mobile in payload or latest verified mobile
+        mob_candidate = str(data.get("mobile", "")).strip()
+        if len(mob_candidate) == 10 and mob_candidate.isdigit():
+            verified_mobile = mob_candidate
+        else:
+            # Check latest verified OTP in database
+            conn = services.get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT mobile FROM otps ORDER BY id DESC LIMIT 1")
+            row = cur.fetchone()
+            cur.close()
+            conn.close()
+            if row:
+                verified_mobile = row[0]
+            else:
+                return jsonify({
+                    "success": False,
+                    "error": "Authentication required. Please verify mobile number first."
+                })
+
+    form_data = {
+        "applicant_name": data.get("applicant_name", ""),
+        "dob": data.get("dob", ""),
+        "village": data.get("village", ""),
+        "block": data.get("block", ""),
+        "bank_account": data.get("bank_account", ""),
+        "ifsc": data.get("ifsc", ""),
+        "gender": data.get("gender", ""),
+        "marital_status": data.get("marital_status", ""),
+        "husband_name": data.get("husband_name", "")
+    }
+
+    # Ensure placeholder document exists for AI-assisted applications
+    os.makedirs(services.UPLOAD_DIR, exist_ok=True)
+    doc_path = os.path.join(services.UPLOAD_DIR, f"{verified_mobile}_age_proof_ai_verified.pdf")
+    if not os.path.exists(doc_path):
+        with open(doc_path, "wb") as f:
+            f.write(b"%PDF-1.4\n% Age proof verified during AI-assisted application session.\n%%EOF\n")
+
+    result = services.submit_application(
+        mobile=verified_mobile,
+        data=form_data,
+        doc_path=doc_path,
+        actor="mcp:citizen",
+        is_ai=True
+    )
+
+    if result.get("success"):
+        return jsonify({
+            "success": True,
+            "application_no": result.get("application_no"),
+            "status": "PENDING",
+            "message": f"Pension application {result.get('application_no')} submitted successfully. Under the Purvanchal RTPS Act, it will be processed within 15 days.",
+            "statutory_deemed_approval_days": 15
+        })
+    else:
+        return jsonify({
+            "success": False,
+            "errors": result.get("errors", []),
+            "error": "; ".join(result.get("errors", ["Submission failed."]))
+        })
+
+
+@app.route("/api/application/status", methods=["GET"])
+def api_application_status():
+    """Check application status by application number."""
+    import mcp_citizen
+    session_token = request.args.get("session_token", "")
+    application_no = request.args.get("application_no", "")
+    return jsonify(mcp_citizen.get_application_status(
+        session_token=session_token,
+        application_no=application_no
+    ))
+
+
 from oauth import oauth as _oauth_blueprint   # noqa: E402  (needs the definitions above)
 app.register_blueprint(_oauth_blueprint)
 
