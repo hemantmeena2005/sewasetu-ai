@@ -1,12 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Application Submitted</h2>
-<p>Your application has been received and is pending departmental verification.</p>
-<table class="tbl" style="max-width:480px">
-  <tr><th>Application Number</th><td><b>{{ app_no }}</b></td></tr>
-</table>
-<p class="note">Please note down your Application Number. You can check your
-application status on the <a href="/status">status portal</a> using your mobile
-number and password (your date of birth in DDMMYYYY format).</p>
-<p><a href="/ack/{{ app_id }}.pdf"><button class="btn">Download Acknowledgment (PDF)</button></a></p>
+<div class="step-progress-bar" style="background:#f0fff4; color:#22543d;">
+  <span style="font-weight:700;">&#10003; {{ t('submitted_heading') }}</span>
+</div>
+
+<h2 style="color:#22543d;">{{ t('submitted_heading') }}</h2>
+<p style="font-size:18px;">{{ t('submitted_sub') }}</p>
+
+<div style="background:#f7fafc; border:2px dashed var(--primary); border-radius:8px; padding:24px; text-align:center; margin:24px 0;">
+  <div style="font-size:16px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:1px;">
+    {{ t('app_no_label') }}
+  </div>
+  <div style="font-size:36px; font-weight:800; color:var(--primary); margin:10px 0; letter-spacing:2px;" id="application-number-display">
+    {{ app_no }}
+  </div>
+  <p class="note" style="max-width:540px; margin:0 auto;">{{ t('track_instruction') }}</p>
+</div>
+
+<div style="display:flex; gap:16px; margin:28px 0; flex-wrap:wrap;">
+  <a href="/ack/{{ app_id }}.pdf" class="btn" role="button">&#128196; {{ t('download_ack') }}</a>
+  <a href="/status" class="btn btn-secondary" role="button">{{ t('check_status') }}</a>
+</div>
+
+<div style="background:#fff5f5; border:1px solid #feb2b2; border-radius:8px; padding:18px; margin-top:32px;">
+  <strong style="color:var(--danger); font-size:16px;">{{ t('kiosk_clear_warning') }}</strong>
+  <p style="margin:8px 0 14px; font-size:15px; color:#742a2a;">
+    To prevent the next person from seeing your application details, click the button below to finish and reset the screen.
+  </p>
+  <a href="/logout" class="btn btn-danger" style="font-size:15px;">&#x2715; {{ t('clear_screen_btn') }}</a>
+</div>
 {% endblock %}

@@ -1,17 +1,34 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="steps"><b>Step 3 of 6:</b> Address Details</div>
-<h2>Address Details</h2>
-<form method="post">
-  <label>Village / Town</label>
-  <input type="text" name="village" value="{{ data.get('village','') }}">
-  <label>Block</label>
-  <select name="block">
-    <option value="">--Select--</option>
-    {% for b in blocks %}
-    <option {% if data.get('block')==b %}selected{% endif %}>{{ b }}</option>
-    {% endfor %}
-  </select>
-  <p><button class="btn" type="submit">Save &amp; Continue</button></p>
+<div class="step-progress-bar" aria-label="Application progress">
+  <span>&#10003; {{ t('mobile_heading') }}</span>
+  <span>&#10003; {{ t('personal_heading') }}</span>
+  <span class="active-step">&#9679; {{ t('address_heading') }}</span>
+  <span>&rsaquo; {{ t('bank_heading') }}</span>
+  <span>&rsaquo; {{ t('upload_heading') }}</span>
+  <span>&rsaquo; {{ t('declaration_heading') }}</span>
+</div>
+
+<h2>{{ t('address_heading') }}</h2>
+
+<form method="post" action="/form/2">
+  <div style="margin-bottom:18px;">
+    <label for="village">{{ t('village_label') }} <span style="color:var(--danger)">*</span></label>
+    <input type="text" id="village" name="village" value="{{ data.get('village','') }}" required>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <label for="block">{{ t('block_label') }} <span style="color:var(--danger)">*</span></label>
+    <select id="block" name="block" required>
+      <option value="">{{ t('select_option') }}</option>
+      {% for b in blocks %}
+      <option value="{{ b }}" {% if data.get('block')==b %}selected{% endif %}>{{ b }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <p>
+    <button class="btn" type="submit">{{ t('save_continue') }} &rarr;</button>
+  </p>
 </form>
 {% endblock %}

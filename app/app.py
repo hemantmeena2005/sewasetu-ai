@@ -25,10 +25,14 @@ def now_ist():
 
 import requests
 import psycopg2
+import werkzeug
+if not hasattr(werkzeug, "__version__"):
+    werkzeug.__version__ = "3.0.0"
 from flask import (Flask, request, session, redirect, url_for, render_template,
                    flash, send_file, abort)
 from fpdf import FPDF
 import services
+import i18n
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -39,6 +43,43 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY") or config.get("app", "secret_key")
 # Two hours: elderly applicants fill the form slowly; the draft lives in the session.
 app.config["PERMANENT_SESSION_LIFETIME"] = 7200
+
+
+@app.before_request
+def handle_i18n():
+    lang = request.args.get("lang")
+    if lang in ("en", "te"):
+        session["lang"] = lang
+
+
+@app.context_processor
+def inject_i18n():
+    lang = session.get("lang", "en")
+    return {
+        "current_lang": lang,
+        "t": lambda key, **kwargs: i18n.get_translation(key, lang, **kwargs)
+    }
+
+
+@app.after_request
+def set_privacy_headers(response):
+    # Prevent browser caching of sensitive citizen data on shared kiosks
+    if request.path.startswith(("/apply", "/verify", "/form", "/upload", "/declaration", "/status", "/application", "/ack")):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
+
+
+@app.route("/logout")
+@app.route("/apply/reset")
+def logout():
+    """Securely clear the session on shared devices and kiosks."""
+    lang = session.get("lang", "en")
+    session.clear()
+    session["lang"] = lang
+    flash(i18n.get_translation("session_cleared_msg", lang), "success")
+    return redirect(url_for("index"))
 
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
@@ -241,6 +282,7 @@ def apply():
         send_sms(mobile, "Your Sewa Setu OTP is %s. Valid for 5 minutes." % code)
         session.permanent = True
         session["apply_mobile"] = mobile
+        session["is_helper"] = bool(request.form.get("is_helper"))
         return redirect(url_for("verify"))
     return render_template("apply.html", captcha_q=make_captcha())
 

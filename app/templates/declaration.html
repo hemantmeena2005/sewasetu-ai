@@ -1,38 +1,103 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="steps"><b>Step 6 of 6:</b> Preview &amp; Declaration</div>
-<h2>Please check your application before submitting</h2>
-<table class="tbl" style="max-width:640px">
-  <tr><th>Full Name</th><td>{{ data.get('applicant_name','') }}</td></tr>
-  <tr><th>Date of Birth</th><td>{{ data.get('dob','') }}</td></tr>
-  <tr><th>Gender</th><td>{{ data.get('gender','') }}</td></tr>
-  <tr><th>Marital Status</th><td>{{ data.get('marital_status','') }}</td></tr>
+<div class="step-progress-bar" aria-label="Application progress">
+  <span>&#10003; {{ t('mobile_heading') }}</span>
+  <span>&#10003; {{ t('personal_heading') }}</span>
+  <span>&#10003; {{ t('address_heading') }}</span>
+  <span>&#10003; {{ t('bank_heading') }}</span>
+  <span>&#10003; {{ t('upload_heading') }}</span>
+  <span class="active-step">&#9679; {{ t('declaration_heading') }}</span>
+</div>
+
+<h2>{{ t('declaration_heading') }}</h2>
+<p class="note" style="font-size:16px;">{{ t('review_desc') }}</p>
+
+<table class="tbl" aria-label="Application summary">
+  <tr>
+    <th scope="row">{{ t('full_name_label') }}</th>
+    <td>{{ data.get('applicant_name','') }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('dob_label') }}</th>
+    <td>{{ data.get('dob','') }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('gender_label') }}</th>
+    <td>{{ data.get('gender','') or '-' }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('marital_label') }}</th>
+    <td>{{ data.get('marital_status','') or '-' }}</td>
+  </tr>
   {% if data.get('marital_status') == 'Widowed' %}
-  <tr><th>Late Husband's Name</th><td>{{ data.get('husband_name','') or '-' }}</td></tr>
+  <tr>
+    <th scope="row">{{ t('husband_label') }}</th>
+    <td>{{ data.get('husband_name','') or '-' }}</td>
+  </tr>
   {% endif %}
-  <tr><th>Village / Town</th><td>{{ data.get('village','') }}</td></tr>
-  <tr><th>Block</th><td>{{ data.get('block','') }}</td></tr>
-  <tr><th>Bank Account</th><td>{{ data.get('bank_account','') }}</td></tr>
-  <tr><th>IFSC</th><td>{{ data.get('ifsc','') }}</td></tr>
-  <tr><th>Age Proof Document</th><td>{{ doc_name or '-' }}</td></tr>
+  <tr>
+    <th scope="row">{{ t('village_label') }}</th>
+    <td>{{ data.get('village','') }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('block_label') }}</th>
+    <td>{{ data.get('block','') }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('bank_account_label') }}</th>
+    <td>
+      {% set acc = data.get('bank_account','') %}
+      {% if acc|length >= 4 %}
+        XXXXXX{{ acc[-4:] }} <span class="note">(Masked for privacy)</span>
+      {% else %}
+        {{ acc }}
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('ifsc_label') }}</th>
+    <td>{{ data.get('ifsc','') }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('doc_attached') }}</th>
+    <td>{{ doc_name or '-' }}</td>
+  </tr>
 </table>
-<p class="note">Need to change something?
-  <a href="/form/1">Personal details</a> &middot;
-  <a href="/form/2">Address</a> &middot;
-  <a href="/form/3">Bank details</a> &middot;
-  <a href="/upload">Document</a></p>
+
+<div style="background:#f7fafc; padding:14px; border:1px solid var(--border-color); border-radius:6px; margin:20px 0;">
+  <strong>{{ t('change_details') }}</strong>
+  <div style="display:flex; gap:16px; margin-top:8px; flex-wrap:wrap;">
+    <a href="/form/1" style="font-weight:600;">{{ t('edit_personal') }}</a> &middot;
+    <a href="/form/2" style="font-weight:600;">{{ t('edit_address') }}</a> &middot;
+    <a href="/form/3" style="font-weight:600;">{{ t('edit_bank') }}</a> &middot;
+    <a href="/upload" style="font-weight:600;">{{ t('edit_document') }}</a>
+  </div>
+</div>
+
 {% if errors %}
-<div class="flash">This application cannot be submitted yet:
-  <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+<div class="flash" role="alert">
+  <strong>This application cannot be submitted yet due to the following problems:</strong>
+  <ul style="margin:8px 0 0; padding-left:20px;">
+    {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+  </ul>
 </div>
 {% else %}
-<h3>Declaration</h3>
-<p>I hereby declare that the information furnished above is true to the best of my
-knowledge and belief. I understand that furnishing false information is punishable
-under applicable law and will result in cancellation of pension.</p>
-<form method="post">
-  <p><input type="checkbox" required> I agree to the above declaration.</p>
-  <p><button class="btn" type="submit">Submit Application</button></p>
-</form>
+<div style="background:#fffaf0; border:2px solid var(--accent); border-radius:8px; padding:22px; margin:24px 0;">
+  <h3 style="margin-top:0; color:#c05621;">{{ t('declaration_title') }}</h3>
+  <p style="font-size:16px; line-height:1.7;">{{ t('declaration_body') }}</p>
+  
+  <form method="post" action="/declaration">
+    <div style="margin:18px 0;">
+      <label style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; font-size:17px; font-weight:600;">
+        <input type="checkbox" id="declaration_agree" name="declaration_agree" required style="width:24px; height:24px; margin-top:2px;">
+        <span>{{ t('agree_checkbox') }} <span style="color:var(--danger)">*</span></span>
+      </label>
+    </div>
+
+    <p style="margin-top:20px;">
+      <button class="btn" type="submit" id="submit-application-btn">{{ t('submit_application_btn') }} &#x2713;</button>
+    </p>
+  </form>
+</div>
 {% endif %}
 {% endblock %}

@@ -1,31 +1,95 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Application Status</h2>
-<table class="tbl" style="max-width:640px">
-  <tr><th>Application No</th><td>{{ a[0] }}</td></tr>
-  <tr><th>Applicant Name</th><td>{{ a[1] }}</td></tr>
-  <tr><th>Mobile</th><td>{{ a[2] }}</td></tr>
-  <tr><th>Date of Birth</th><td>{{ a[3] }}</td></tr>
-  <tr><th>Village</th><td>{{ a[4] }}</td></tr>
-  <tr><th>Block</th><td>{{ a[5] }}</td></tr>
-  <tr><th>Bank Account</th><td>{{ a[6] }}</td></tr>
-  <tr><th>IFSC</th><td>{{ a[7] }}</td></tr>
-  <tr><th>Status</th><td><b>{{ a[8] }}</b></td></tr>
-  <tr><th>Submitted</th><td>{{ a[9] }}</td></tr>
-  <tr><th>Decided</th><td>{{ a[10] or '-' }}</td></tr>
+<h2>{{ t('status_details_heading') }}</h2>
+
+<table class="tbl" aria-label="{{ t('status_details_heading') }}">
+  <tr>
+    <th scope="row">{{ t('app_no_label') }}</th>
+    <td><strong style="font-size:20px; color:var(--primary); letter-spacing:1px;">{{ a[0] }}</strong></td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('full_name_label') }}</th>
+    <td>{{ a[1] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('mobile_label') }}</th>
+    <td>XXXXXX{{ a[2][-4:] if a[2]|length >= 4 else a[2] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('dob_label') }}</th>
+    <td>{{ a[3] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('village_label') }}</th>
+    <td>{{ a[4] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('block_label') }}</th>
+    <td>{{ a[5] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('bank_account_label') }}</th>
+    <td>
+      {% if a[6]|length >= 4 %}
+        XXXXXX{{ a[6][-4:] }} <span class="note">(Masked for privacy)</span>
+      {% else %}
+        {{ a[6] }}
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('ifsc_label') }}</th>
+    <td>{{ a[7] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('status_current') }}</th>
+    <td>
+      {% if a[8] in ('APPROVED', 'DEEMED_APPROVED') %}
+        <span style="background:#c6f6d5; color:#22543d; padding:4px 12px; border-radius:4px; font-weight:700;">{{ a[8] }}</span>
+      {% elif a[8] == 'PENDING' %}
+        <span style="background:#feebc8; color:#744210; padding:4px 12px; border-radius:4px; font-weight:700;">{{ a[8] }}</span>
+      {% else %}
+        <span style="background:#fed7d7; color:#742a2a; padding:4px 12px; border-radius:4px; font-weight:700;">{{ a[8] }}</span>
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <th scope="row">{{ t('submitted_date') }}</th>
+    <td>{{ a[9] }}</td>
+  </tr>
+  <tr>
+    <th scope="row">Decided At</th>
+    <td>{{ a[10] or 'Awaiting Departmental Review' }}</td>
+  </tr>
 </table>
-<p><a href="/ack/{{ app_id }}.pdf">Download Acknowledgment (PDF)</a> &middot;
-<a href="/status/connections">Connected applications</a></p>
+
+<div style="display:flex; gap:16px; margin:24px 0; flex-wrap:wrap;">
+  <a href="/ack/{{ app_id }}.pdf" class="btn" role="button">&#128196; {{ t('download_ack') }}</a>
+  <a href="/status/connections" class="btn btn-secondary" role="button">Connected Applications (OAuth)</a>
+</div>
+
 {% if a[8] == 'PENDING' %}
-<h3>Made a mistake?</h3>
-<p class="note">A pending application can be withdrawn. After withdrawing, you may
-submit a fresh application with the same mobile number.</p>
-<form method="post" action="/application/{{ app_id }}/withdraw"
-      onsubmit="return confirm('Withdraw application {{ a[0] }}? This cannot be undone.');">
-  <button class="btn" style="background:#a33" type="submit">Withdraw this application</button>
-</form>
+<div style="background:#fffaf0; border:1px solid #fbd38d; border-radius:6px; padding:18px; margin:24px 0;">
+  <h3 style="margin-top:0; color:#744210;">Made a mistake in your application?</h3>
+  <p class="note" style="font-size:15px; margin-bottom:14px;">
+    A pending application can be withdrawn. After withdrawing, you can immediately submit a fresh application with corrected details using the same mobile number.
+  </p>
+  <form method="post" action="/application/{{ app_id }}/withdraw"
+        onsubmit="return confirm('Withdraw application {{ a[0] }}? This cannot be undone.');">
+    <button class="btn btn-danger" type="submit">{{ t('withdraw_btn') }}</button>
+  </form>
+</div>
 {% elif a[8] in ('WITHDRAWN', 'REJECTED') %}
-<p class="note">This application is {{ a[8].lower() }}. You may
-<a href="/apply">submit a new application</a>.</p>
+<div class="helper-box">
+  This application is {{ a[8].lower() }}. You may <a href="/apply" style="font-weight:700; text-decoration:underline;">submit a fresh application</a> now.
+</div>
 {% endif %}
+
+<div style="background:#edf2f7; border-radius:8px; padding:18px; margin-top:32px;">
+  <strong style="font-size:16px;">{{ t('kiosk_clear_warning') }}</strong>
+  <p class="note" style="margin:6px 0 14px;">
+    Always clear your session before leaving a public computer, kiosk, or shared phone.
+  </p>
+  <a href="/logout" class="btn btn-danger" style="font-size:15px;">&#x2715; {{ t('clear_screen_btn') }}</a>
+</div>
 {% endblock %}

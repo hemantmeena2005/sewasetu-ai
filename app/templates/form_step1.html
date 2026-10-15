@@ -1,29 +1,63 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="steps"><b>Step 2 of 6:</b> Personal Details</div>
-<h2>Personal Details</h2>
-<form method="post">
-  <label>Full Name of Applicant (as per age proof document)</label>
-  <input type="text" name="applicant_name" value="{{ data.get('applicant_name','') }}">
-  <label>Date of Birth (DD/MM/YYYY)</label>
-  <input type="text" name="dob" placeholder="DD/MM/YYYY" value="{{ data.get('dob','') }}">
-  <label>Gender</label>
-  <select name="gender">
-    <option value="">--Select--</option>
-    <option {% if data.get('gender')=='Male' %}selected{% endif %}>Male</option>
-    <option {% if data.get('gender')=='Female' %}selected{% endif %}>Female</option>
-    <option {% if data.get('gender')=='Other' %}selected{% endif %}>Other</option>
-  </select>
-  <label>Marital Status</label>
-  <select name="marital_status">
-    <option value="">--Select--</option>
-    <option {% if data.get('marital_status')=='Married' %}selected{% endif %}>Married</option>
-    <option {% if data.get('marital_status')=='Unmarried' %}selected{% endif %}>Unmarried</option>
-    <option {% if data.get('marital_status')=='Widowed' %}selected{% endif %}>Widowed</option>
-  </select>
-  <label>Late Husband's Name (only if widowed; optional)</label>
-  <input type="text" name="husband_name" value="{{ data.get('husband_name','') }}">
-  <p class="note">Name, date of birth, village, block and bank account are mandatory.</p>
-  <p><button class="btn" type="submit">Save &amp; Continue</button></p>
+<div class="step-progress-bar" aria-label="Application progress">
+  <span>&#10003; {{ t('mobile_heading') }}</span>
+  <span class="active-step">&#9679; {{ t('personal_heading') }}</span>
+  <span>&rsaquo; {{ t('address_heading') }}</span>
+  <span>&rsaquo; {{ t('bank_heading') }}</span>
+  <span>&rsaquo; {{ t('upload_heading') }}</span>
+  <span>&rsaquo; {{ t('declaration_heading') }}</span>
+</div>
+
+<h2>{{ t('personal_heading') }}</h2>
+<p class="note" style="font-size:16px;">{{ t('dob_help') }}</p>
+
+{% if session.get('is_helper') %}
+<div class="helper-box">
+  {{ t('helper_notice') }}
+</div>
+{% endif %}
+
+<form method="post" action="/form/1">
+  <div style="margin-bottom:18px;">
+    <label for="applicant_name">{{ t('full_name_label') }} <span style="color:var(--danger)">*</span></label>
+    <input type="text" id="applicant_name" name="applicant_name" value="{{ data.get('applicant_name','') }}" required>
+  </div>
+
+  <div style="margin-bottom:18px;">
+    <label for="dob">{{ t('dob_label') }} <span style="color:var(--danger)">*</span></label>
+    <input type="text" id="dob" name="dob" placeholder="{{ t('dob_placeholder') }}" value="{{ data.get('dob','') }}" required>
+    <p class="note">{{ t('dob_help') }}</p>
+  </div>
+
+  <div style="margin-bottom:18px;">
+    <label for="gender">{{ t('gender_label') }}</label>
+    <select id="gender" name="gender">
+      <option value="">{{ t('select_option') }}</option>
+      <option value="Female" {% if data.get('gender')=='Female' %}selected{% endif %}>{{ t('female') }}</option>
+      <option value="Male" {% if data.get('gender')=='Male' %}selected{% endif %}>{{ t('male') }}</option>
+      <option value="Other" {% if data.get('gender')=='Other' %}selected{% endif %}>{{ t('other') }}</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom:18px;">
+    <label for="marital_status">{{ t('marital_label') }}</label>
+    <select id="marital_status" name="marital_status">
+      <option value="">{{ t('select_option') }}</option>
+      <option value="Married" {% if data.get('marital_status')=='Married' %}selected{% endif %}>{{ t('married') }}</option>
+      <option value="Widowed" {% if data.get('marital_status')=='Widowed' %}selected{% endif %}>{{ t('widowed') }}</option>
+      <option value="Unmarried" {% if data.get('marital_status')=='Unmarried' %}selected{% endif %}>{{ t('unmarried') }}</option>
+      <option value="Divorced" {% if data.get('marital_status')=='Divorced' %}selected{% endif %}>{{ t('divorced') }}</option>
+    </select>
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <label for="husband_name">{{ t('husband_label') }}</label>
+    <input type="text" id="husband_name" name="husband_name" value="{{ data.get('husband_name','') }}">
+  </div>
+
+  <p>
+    <button class="btn" type="submit">{{ t('save_continue') }} &rarr;</button>
+  </p>
 </form>
 {% endblock %}

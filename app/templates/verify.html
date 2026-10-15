@@ -1,11 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="steps"><b>Step 1 of 6:</b> Mobile Verification</div>
-<h2>Enter OTP</h2>
-<p class="note">An OTP has been sent to {{ mobile }}.</p>
-<form method="post">
-  <label>OTP</label>
-  <input type="text" name="otp" maxlength="6" style="max-width:160px">
-  <p><button class="btn" type="submit">Verify</button></p>
+<div class="step-progress-bar" aria-label="Application progress">
+  <span class="active-step">&#9679; {{ t('mobile_heading') }}</span>
+  <span>&rsaquo; {{ t('personal_heading') }}</span>
+  <span>&rsaquo; {{ t('address_heading') }}</span>
+  <span>&rsaquo; {{ t('bank_heading') }}</span>
+  <span>&rsaquo; {{ t('upload_heading') }}</span>
+  <span>&rsaquo; {{ t('declaration_heading') }}</span>
+</div>
+
+<h2>{{ t('enter_otp_heading') }}</h2>
+<div class="helper-box">
+  {{ t('otp_sent_to', mobile=mobile) }}
+</div>
+
+<form method="post" action="/verify">
+  <div style="margin-bottom:24px;">
+    <label for="otp">{{ t('otp_label') }} <span style="color:var(--danger)">*</span></label>
+    <input type="text" id="otp" name="otp" maxlength="6" inputmode="numeric" style="max-width:200px; font-size:22px; letter-spacing:4px; text-align:center;" placeholder="123456" required autocomplete="one-time-code">
+    <p class="note">{{ t('otp_sent_note') }}</p>
+  </div>
+
+  <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+    <button class="btn" type="submit" id="verify-otp-btn">{{ t('verify_btn') }} &rarr;</button>
+    <a href="/apply" class="btn btn-secondary" style="font-size:15px;">{{ t('resend_otp') }}</a>
+  </div>
 </form>
 {% endblock %}

@@ -1,12 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>Application Status Portal</h2>
-<form method="post">
-  <label>Mobile Number</label>
-  <input type="text" name="mobile" maxlength="10">
-  <label>Password</label>
-  <input type="password" name="password">
-  <p><button class="btn" type="submit">Login</button></p>
+<h2>{{ t('status_heading') }}</h2>
+<p class="note" style="font-size:16px;">{{ t('status_dob_help') }}</p>
+
+<form method="post" action="/status">
+  <div style="margin-bottom:18px;">
+    <label for="status_mobile">{{ t('status_mobile_label') }} <span style="color:var(--danger)">*</span></label>
+    <input type="text" id="status_mobile" name="mobile" maxlength="10" inputmode="numeric" placeholder="e.g. 9876543210" required autocomplete="username">
+  </div>
+
+  <div style="margin-bottom:24px;">
+    <label for="status_password">{{ t('status_dob_label') }} <span style="color:var(--danger)">*</span></label>
+    <input type="password" id="status_password" name="password" maxlength="8" placeholder="DDMMYYYY" required autocomplete="current-password">
+    <p class="note">{{ t('status_dob_help') }}</p>
+  </div>
+
+  <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+    <button class="btn" type="submit">{{ t('check_status_btn') }} &rarr;</button>
+    <a href="/status/reset" class="note" style="text-decoration:underline;">Forgot password?</a>
+  </div>
 </form>
-<p class="note"><a href="/status/reset">Forgot password?</a></p>
 {% endblock %}
