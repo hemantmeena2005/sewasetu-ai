@@ -39,7 +39,13 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from flask import (Blueprint, request, jsonify, redirect, render_template, session,
                    flash, url_for, abort)
 
-import app as portal
+import services as portal
+
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
+portal.ADMIN_USERNAME = ADMIN_USERNAME
+portal.ADMIN_PASSWORD = ADMIN_PASSWORD
+portal.OTP_VALIDITY_SECONDS = 300
 
 oauth = Blueprint("oauth", __name__)
 
