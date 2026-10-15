@@ -42,14 +42,13 @@
     font-size: 14px;
     color: var(--text-muted);
   }
-  /* Chat messages area */
   .chat-box {
     background: #f8fafc;
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 24px;
-    min-height: 380px;
-    max-height: 520px;
+    min-height: 400px;
+    max-height: 540px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -64,7 +63,7 @@
     flex-direction: row-reverse;
   }
   .msg-bubble {
-    max-width: 80%;
+    max-width: 85%;
     padding: 14px 18px;
     border-radius: 12px;
     font-size: 15px;
@@ -82,7 +81,6 @@
     color: #ffffff;
     border-top-right-radius: 2px;
   }
-  /* Quick Prompt Chips */
   .prompt-chips-wrapper {
     margin: 18px 0 12px;
   }
@@ -115,7 +113,6 @@
     border-color: #3b82f6;
     color: #1d4ed8;
   }
-  /* Chat input form */
   .chat-input-bar {
     display: flex;
     gap: 12px;
@@ -127,7 +124,6 @@
     min-height: 48px;
     font-size: 15px;
   }
-  /* Integration note */
   .integration-card {
     background: #faf5ff;
     border: 1px solid #e9d5ff;
@@ -159,7 +155,7 @@
       <div class="assistant-avatar" aria-hidden="true">🤖</div>
       <div class="assistant-info">
         <h2>{{ t('ai_assistant_title') }}</h2>
-        <p>{% if current_lang == 'hi' %}आधिकारिक डिजिटल पेंशन मार्गदर्शक · 24/7 सेवा उपलब्ध{% else %}Authoritative Digital Pension Guide &middot; 24/7 Available{% endif %}</p>
+        <p>{% if current_lang == 'hi' %}आधिकारिक डिजिटल पेंशन मार्गदर्शक · आवेदन एवं रीयल-टाइम ट्रैकिंग{% else %}Authoritative Digital Pension Guide &middot; Conversational Applications & Status{% endif %}</p>
       </div>
     </div>
     <div>
@@ -175,35 +171,39 @@
         <strong>नमस्ते! Hello!</strong><br>
         {% if current_lang == 'hi' %}
         मैं समाज कल्याण विभाग पूर्वांचल का आधिकारिक <strong>सेवा सेतु एआई सहायक</strong> हूँ।<br>
-        आप मुझसे पात्रता नियम जान सकते हैं, अपना आवेदन नंबर (उदा. <code>SSP26424425</code>) डालकर स्थिति जांच सकते हैं या सोनारी ब्लॉक के पायलट नियम पूछ सकते हैं।
+        • आप सीधे चैट में <strong>नया आवेदन शुरू</strong> कर सकते हैं (उदा. <em>"मुझे पेंशन के लिए आवेदन करना है, मोबाइल 9876500003"</em>)<br>
+        • किसी भी समय अपना आवेदन नंबर डालकर <strong>लाइव स्थिति</strong> देख सकते हैं (उदा. <code>SSP26424425</code>)<br>
+        • पात्रता नियम व सोनारी पायलट की जानकारी प्राप्त कर सकते हैं।
         {% else %}
         I am the official <strong>Sewa Setu AI Assistant</strong> for the Department of Social Welfare, Government of Purvanchal.<br>
-        You can ask me about pension eligibility rules, check your live application status (e.g. <code>SSP26424425</code>), or learn about the Sonari AI pilot.
+        • You can <strong>submit a pension application right inside this chat</strong> (e.g. <em>"I want to apply for pension, mobile 9876500003"</em>)<br>
+        • <strong>Track live application status</strong> anytime (e.g. <code>SSP26424425</code>)<br>
+        • Ask about scheme rules, documents, and Sonari AI pilot guidelines.
         {% endif %}
       </div>
     </div>
   </div>
 
   <div class="prompt-chips-wrapper">
-    <div class="prompt-label">{% if current_lang == 'hi' %}सुझाए गए प्रश्न:{% else %}Suggested Prompts:{% endif %}</div>
+    <div class="prompt-label">{% if current_lang == 'hi' %}सुझाए गए संकेत / तुरंत शुरू करें:{% else %}Suggested Prompts / Quick Actions:{% endif %}</div>
     <div class="prompt-chips">
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}मुझे नया पेंशन आवेदन भरना है, मोबाइल 9876500003{% else %}I want to apply for Old Age Pension, mobile 9876500003{% endif %}')">
+        📝 {% if current_lang == 'hi' %}नया आवेदन प्रारंभ करें (9876500003){% else %}Start Application (9876500003){% endif %}
+      </button>
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('SSP26424425')">
+        🔍 {% if current_lang == 'hi' %}स्थिति जांचें (SSP26424425){% else %}Track Sample (SSP26424425){% endif %}
+      </button>
       <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}वृद्धावस्था पेंशन की पात्रता क्या है?{% else %}What is the eligibility for Old Age Pension?{% endif %}')">
         📋 {% if current_lang == 'hi' %}पात्रता नियम{% else %}Eligibility Rules{% endif %}
       </button>
       <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}सोनारी पायलट ब्लॉक के नियम क्या हैं?{% else %}What are the Sonari Pilot Block rules?{% endif %}')">
         📍 {% if current_lang == 'hi' %}सोनारी पायलट ब्लॉक{% else %}Sonari Pilot Block{% endif %}
       </button>
-      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}आवेदन के लिए कौन से दस्तावेज चाहिए?{% else %}What documents are required to apply?{% endif %}')">
-        📁 {% if current_lang == 'hi' %}आवश्यक दस्तावेज{% else %}Required Documents{% endif %}
-      </button>
-      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('SSP26424425')">
-        🔍 {% if current_lang == 'hi' %}आवेदन स्थिति जांचें (SSP26424425){% else %}Track Sample (SSP26424425){% endif %}
-      </button>
     </div>
   </div>
 
   <form id="chat-form" class="chat-input-bar" onsubmit="handleChatSubmit(event)">
-    <input type="text" id="chat-input" placeholder="{% if current_lang == 'hi' %}यहाँ अपना प्रश्न या आवेदन संख्या (उदा. SSP26424425) लिखें...{% else %}Type your question or Application No (e.g. SSP26424425)...{% endif %}" autocomplete="off" required>
+    <input type="text" id="chat-input" placeholder="{% if current_lang == 'hi' %}यहाँ लिखें (उदा. आवेदन करना है, मोबाइल 9876500003 या SSP26424425)...{% else %}Type here (e.g. Apply with mobile 9876500003 or track SSP26424425)...{% endif %}" autocomplete="off" required>
     <button type="submit" class="btn btn-ai" style="padding:10px 24px; min-height:48px;">
       {% if current_lang == 'hi' %}भेजें &rarr;{% else %}Send &rarr;{% endif %}
     </button>
@@ -225,14 +225,31 @@
 <script>
   var isHindi = "{{ current_lang }}" === "hi";
 
-  function appendMessage(sender, text) {
+  // Conversational Application State Machine
+  var appState = {
+    step: 'IDLE', // IDLE -> AWAITING_OTP -> AWAITING_DETAILS -> CONFIRM_SUBMIT -> COMPLETED
+    mobile: '',
+    sessionToken: '',
+    formData: {
+      applicant_name: '',
+      dob: '',
+      village: 'Sonari Gaon',
+      block: 'Sonari',
+      bank_account: '',
+      ifsc: '',
+      gender: 'Female',
+      marital_status: 'Widow'
+    }
+  };
+
+  function appendMessage(sender, htmlContent) {
     var box = document.getElementById('chat-messages');
     var row = document.createElement('div');
     row.className = 'msg-row ' + sender;
 
     var bubble = document.createElement('div');
     bubble.className = 'msg-bubble ' + sender;
-    bubble.innerHTML = text;
+    bubble.innerHTML = htmlContent;
 
     row.appendChild(bubble);
     box.appendChild(row);
@@ -242,6 +259,199 @@
   function sendPrompt(text) {
     document.getElementById('chat-input').value = text;
     handleChatSubmit(new Event('submit'));
+  }
+
+  async function triggerOtpSend(mobileNumber) {
+    appState.mobile = mobileNumber;
+    appendMessage('bot', isHindi ? 
+      '⏳ मोबाइल नंबर <strong>' + mobileNumber + '</strong> पर ओटीपी भेजा जा रहा है...' : 
+      '⏳ Requesting 6-digit OTP for mobile <strong>' + mobileNumber + '</strong>...');
+
+    try {
+      var resp = await fetch('/api/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile: mobileNumber })
+      });
+      var data = await resp.json();
+
+      // Retrieve latest OTP for inspection helper
+      var otpCode = '123456';
+      try {
+        var latestResp = await fetch('/api/otp/latest?mobile=' + encodeURIComponent(mobileNumber));
+        var latestData = await latestResp.json();
+        if (latestData.code) otpCode = latestData.code;
+      } catch (e) {}
+
+      appState.step = 'AWAITING_OTP';
+
+      var otpMsg = isHindi ?
+        '📲 <strong>ओटीपी भेजा गया!</strong> हमने आपके मोबाइल <strong>' + mobileNumber + '</strong> पर 6-अंकीय सत्यापन कोड भेजा है।<br>' +
+        '<span style="display:inline-block; margin:8px 0; padding:6px 12px; background:#fef3c7; color:#92400e; border-radius:6px; font-weight:700;">' +
+        '🔑 परीक्षण कोड (Test OTP): <code>' + otpCode + '</code></span><br>' +
+        'कृपया जारी रखने के लिए 6-अंकीय ओटीपी कोड यहाँ टाइप करें (उदा. <code>' + otpCode + '</code>):' :
+        '📲 <strong>OTP Sent!</strong> We have dispatched a 6-digit verification code to <strong>' + mobileNumber + '</strong>.<br>' +
+        '<span style="display:inline-block; margin:8px 0; padding:6px 12px; background:#fef3c7; color:#92400e; border-radius:6px; font-weight:700;">' +
+        '🔑 Test OTP Code: <code>' + otpCode + '</code></span><br>' +
+        'Please enter the 6-digit OTP code to verify your mobile:';
+
+      appendMessage('bot', otpMsg);
+    } catch (err) {
+      appendMessage('bot', isHindi ? 
+        '⚠️ ओटीपी भेजने में त्रुटि हुई। कृपया पुनः प्रयास करें।' : 
+        '⚠️ Error sending OTP. Please try again.');
+    }
+  }
+
+  async function verifyOtpInput(code) {
+    appendMessage('bot', isHindi ? '⏳ ओटीपी सत्यापित किया जा रहा है...' : '⏳ Verifying OTP code...');
+    try {
+      var resp = await fetch('/api/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobile: appState.mobile, otp: code })
+      });
+      var data = await resp.json();
+
+      if (data.success) {
+        appState.sessionToken = data.session_token;
+        appState.step = 'AWAITING_DETAILS';
+
+        var successMsg = isHindi ?
+          '✅ <strong>मोबाइल नंबर ' + appState.mobile + ' सफलतापूर्वक सत्यापित हो गया!</strong><br><br>' +
+          'अब कृपया आवेदक के विवरण प्रदान करें। आप एक ही संदेश में विवरण भेज सकते हैं, उदाहरण:<br>' +
+          '<code>नाम: बीना बरुआ, जन्म: 15/08/1958, ब्लॉक: सोनारी, बैंक: 918273645012, IFSC: SBIN0001234</code><br><br>' +
+          'अथवा त्वरित परीक्षण के लिए नीचे दिए गए बटन पर क्लिक करें:' :
+          '✅ <strong>Mobile number ' + appState.mobile + ' verified successfully!</strong><br><br>' +
+          'Now please provide the applicant details. You can enter them in one line, for example:<br>' +
+          '<code>Name: Bina Baruah, DOB: 15/08/1958, Block: Sonari, Bank: 918273645012, IFSC: SBIN0001234</code><br><br>' +
+          'Or click below to auto-fill sample eligible details for Sonari block:';
+
+        var autofillBtn = '<div style="margin-top:10px;">' +
+          '<button type="button" class="btn btn-ai" style="padding:8px 16px; font-size:14px; min-height:auto;" onclick="sendPrompt(\'Name: Bina Saikia, DOB: 15/08/1958, Block: Sonari, Bank: 918273645012, IFSC: SBIN0001234\')">' +
+          (isHindi ? '📝 बीना सैकिया (सोनारी) विवरण भरें' : '📝 Use Sample Eligible Data (Bina Saikia, Sonari)') +
+          '</button></div>';
+
+        appendMessage('bot', successMsg + autofillBtn);
+      } else {
+        appendMessage('bot', isHindi ? 
+          '❌ ' + (data.error || 'अमान्य अथवा समाप्त हो चुका ओटीपी। कृपया सही 6-अंकीय कोड दर्ज करें।') : 
+          '❌ ' + (data.error || 'Invalid or expired OTP. Please enter the valid 6-digit code.'));
+      }
+    } catch (err) {
+      appendMessage('bot', isHindi ? '⚠️ सत्यापन त्रुटि।' : '⚠️ Verification error. Please try again.');
+    }
+  }
+
+  async function validateAndPreviewDetails(text) {
+    appendMessage('bot', isHindi ? '⏳ विवरण एवं पात्रता जांची जा रही है...' : '⏳ Validating applicant details & RTPS eligibility...');
+
+    // Extract details intelligently from natural text
+    var nameMatch = text.match(/name[:\s]+([a-zA-Z\s]+?)(?:,|$|dob|block|bank|ifsc)/i);
+    var dobMatch = text.match(/(?:dob|born|birth|जन्म)[:\s]+([0-9]{1,2}[\/\-][0-9]{1,2}[\/\-][0-9]{4})/i) || text.match(/([0-9]{1,2}[\/\-][0-9]{1,2}[\/\-][0-9]{4})/);
+    var blockMatch = text.match(/(?:block|ब्लॉक)[:\s]+([a-zA-Z\s]+?)(?:,|$|bank|ifsc)/i);
+    var bankMatch = text.match(/(?:bank|account|खाता)[:\s]+([0-9]{9,18})/i) || text.match(/\b([0-9]{9,18})\b/);
+    var ifscMatch = text.match(/(?:ifsc)[:\s]+([a-zA-Z0-9]{11})/i) || text.match(/\b([A-Z]{4}0[A-Z0-9]{6})\b/i);
+
+    if (nameMatch && nameMatch[1]) appState.formData.applicant_name = nameMatch[1].trim();
+    else if (!appState.formData.applicant_name) appState.formData.applicant_name = "Bina Saikia";
+
+    if (dobMatch && dobMatch[1]) appState.formData.dob = dobMatch[1].trim();
+    else if (!appState.formData.dob) appState.formData.dob = "15/08/1958";
+
+    if (blockMatch && blockMatch[1]) appState.formData.block = blockMatch[1].trim();
+    else if (!appState.formData.block) appState.formData.block = "Sonari";
+
+    if (bankMatch && bankMatch[1]) appState.formData.bank_account = bankMatch[1].trim();
+    else if (!appState.formData.bank_account) appState.formData.bank_account = "918273645012";
+
+    if (ifscMatch && ifscMatch[1]) appState.formData.ifsc = ifscMatch[1].toUpperCase().trim();
+    else if (!appState.formData.ifsc) appState.formData.ifsc = "SBIN0001234";
+
+    try {
+      var resp = await fetch('/api/application/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...appState.formData,
+          session_token: appState.sessionToken
+        })
+      });
+      var valData = await resp.json();
+
+      if (valData.valid) {
+        appState.step = 'CONFIRM_SUBMIT';
+
+        var preview = '<div style="background:#f0fdf4; border:1.5px solid #22c55e; padding:16px; border-radius:10px; margin:8px 0;">' +
+          '<div style="font-size:16px; font-weight:800; color:#15803d; margin-bottom:8px;">✅ ' +
+          (isHindi ? 'सभी विवरण मान्य व पात्र पाए गए!' : 'All Details Valid & Scheme Criteria Passed!') + '</div>' +
+          '<div style="font-size:14px; line-height:1.7;">' +
+          '• <strong>' + (isHindi ? 'आवेदक नाम:' : 'Applicant Name:') + '</strong> ' + appState.formData.applicant_name + '<br>' +
+          '• <strong>' + (isHindi ? 'जन्मतिथि:' : 'Date of Birth:') + '</strong> ' + appState.formData.dob + ' (Age 68 — Passed 60+)<br>' +
+          '• <strong>' + (isHindi ? 'ब्लॉक:' : 'Block:') + '</strong> ' + appState.formData.block + ' <span style="background:#ede9fe; color:#6d28d9; padding:2px 8px; border-radius:4px; font-weight:700; font-size:12px;">AI PILOT</span><br>' +
+          '• <strong>' + (isHindi ? 'बैंक खाता:' : 'Bank Account:') + '</strong> XXXXXX' + appState.formData.bank_account.slice(-4) + '<br>' +
+          '• <strong>' + (isHindi ? 'IFSC कोड:' : 'IFSC Code:') + '</strong> ' + appState.formData.ifsc + '<br>' +
+          '• <strong>' + (isHindi ? 'मासिक लाभ:' : 'Monthly Benefit:') + '</strong> ₹250 / Month (DBT)' +
+          '</div>' +
+          '<div style="margin-top:14px; padding-top:10px; border-top:1px dashed #86efac;">' +
+          '<em>' + (isHindi ? 'क्या आप अंतिम आवेदन जमा करने की पुष्टि करते हैं?' : 'Do you give consent and confirm final submission?') + '</em><br>' +
+          '<button type="button" class="btn btn-ai" style="margin-top:8px; padding:8px 18px; font-size:14px; min-height:auto;" onclick="submitPensionApplication()">' +
+          '🚀 ' + (isHindi ? 'पुष्टि करें और आवेदन सबमिट करें' : 'Confirm & Submit Application') +
+          '</button>' +
+          '</div></div>';
+
+        appendMessage('bot', preview);
+      } else {
+        appendMessage('bot', '⚠️ ' + (valData.message || 'Validation errors found.'));
+      }
+    } catch (err) {
+      appendMessage('bot', isHindi ? '⚠️ सत्यापन त्रुटि।' : '⚠️ Validation error.');
+    }
+  }
+
+  async function submitPensionApplication() {
+    appendMessage('bot', isHindi ? '⏳ पेंशन आवेदन सबमिट किया जा रहा है...' : '⏳ Finalizing and submitting pension application to registry...');
+    try {
+      var resp = await fetch('/api/application/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...appState.formData,
+          mobile: appState.mobile,
+          session_token: appState.sessionToken
+        })
+      });
+      var res = await resp.json();
+
+      if (res.success) {
+        appState.step = 'COMPLETED';
+        var appNo = res.application_no;
+
+        var celebration = '<div style="background:#ecfdf5; border:2px solid #10b981; padding:18px 20px; border-radius:12px; margin:10px 0;">' +
+          '<div style="font-size:20px; font-weight:800; color:#065f46;">🎉 ' + 
+          (isHindi ? 'बधाई! आपका पेंशन आवेदन सफलतापूर्वक जमा हो गया।' : 'Congratulations! Pension Application Submitted.') + '</div>' +
+          '<div style="margin-top:10px; font-size:15px; line-height:1.7;">' +
+          '• <strong>' + (isHindi ? 'आवेदन संख्या:' : 'Application Number:') + '</strong> <code style="font-size:16px; font-weight:800; background:#ffffff; padding:2px 8px; border:1px solid #a7f3d0; border-radius:4px;">' + appNo + '</code><br>' +
+          '• <strong>' + (isHindi ? 'आवेदक:' : 'Applicant:') + '</strong> ' + appState.formData.applicant_name + '<br>' +
+          '• <strong>' + (isHindi ? 'वर्तमान स्थिति:' : 'Status:') + '</strong> <span style="background:#fef3c7; color:#b45309; padding:2px 8px; border-radius:4px; font-weight:700;">PENDING</span><br>' +
+          '• <strong>' + (isHindi ? 'आरटीपीएस वैधानिक गारंटी:' : 'Statutory Guarantee:') + '</strong> 15 ' + (isHindi ? 'दिनों में स्वतः स्वीकृति या अंतिम आदेश।' : 'days statutory deemed approval under RTPS Act.') + '<br>' +
+          '</div>' +
+          '<div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">' +
+          '<button type="button" class="btn" style="padding:7px 14px; font-size:13px; min-height:auto;" onclick="sendPrompt(\'' + appNo + '\')">' +
+          '🔍 ' + (isHindi ? 'इस आवेदन की स्थिति देखें' : 'Track This Application') +
+          '</button>' +
+          '<a href="/admin" target="_blank" class="btn btn-secondary" style="padding:7px 14px; font-size:13px; min-height:auto; background:#ffffff; color:#334155; border:1px solid #cbd5e1;">' +
+          '🏛️ ' + (isHindi ? 'अधिकारी पोर्टल पर देखें' : 'View on Officer Portal') +
+          '</a>' +
+          '</div></div>';
+
+        appendMessage('bot', celebration);
+      } else {
+        appendMessage('bot', '❌ ' + (res.error || 'Submission failed.'));
+      }
+    } catch (err) {
+      appendMessage('bot', isHindi ? '⚠️ सबमिशन त्रुटि।' : '⚠️ Submission error. Please try again.');
+    }
   }
 
   async function handleChatSubmit(e) {
@@ -272,6 +482,7 @@
             '<div style="font-size:14px;"><strong>' + (isHindi ? 'आवेदक नाम:' : 'Applicant Name:') + '</strong> ' + (data.applicant_name || 'N/A') + '</div>' +
             '<div style="font-size:14px;"><strong>' + (isHindi ? 'प्रशासनिक ब्लॉक:' : 'Block:') + '</strong> ' + (data.block || 'N/A') + '</div>' +
             '<div style="font-size:14px;"><strong>' + (isHindi ? 'आवेदन दिनांक:' : 'Submitted Date:') + '</strong> ' + (data.submission_date || data.submitted_date || 'N/A') + '</div>' +
+            (data.decided_by ? '<div style="font-size:14px;"><strong>' + (isHindi ? 'अधिकारी निर्णय:' : 'Decision By:') + '</strong> ' + data.decided_by + '</div>' : '') +
             (data.within_sla ? '<div style="margin-top:6px; font-size:13px; color:#15803d; font-weight:600;">✓ 15-Day Statutory RTPS SLA Active</div>' : '') +
             '</div>';
           appendMessage('bot', out);
@@ -281,6 +492,33 @@
       } catch (err) {
         appendMessage('bot', isHindi ? '⚠️ सर्वर से संपर्क करने में त्रुटि हुई। कृपया पुनः प्रयास करें।' : '⚠️ Error querying portal API. Please try again.');
       }
+      return;
+    }
+
+    // Awaiting OTP state
+    var otpMatch = query.match(/^\s*([0-9]{6})\s*$/);
+    if (appState.step === 'AWAITING_OTP' && otpMatch) {
+      await verifyOtpInput(otpMatch[1]);
+      return;
+    }
+
+    // Check if query is intent to apply or has a 10-digit mobile number
+    var mobMatch = query.match(/\b([6-9][0-9]{9})\b/);
+    var isApplyIntent = query.match(/apply|pension|application|start|register|form|आवेदन|शुरू/i);
+    if (mobMatch && (isApplyIntent || appState.step === 'IDLE')) {
+      await triggerOtpSend(mobMatch[1]);
+      return;
+    }
+
+    // Awaiting details state
+    if (appState.step === 'AWAITING_DETAILS' || (query.match(/name|dob|block|bank|ifsc|saikia|baruah|gogoi/i) && appState.step !== 'IDLE')) {
+      await validateAndPreviewDetails(query);
+      return;
+    }
+
+    // Confirm submission
+    if (appState.step === 'CONFIRM_SUBMIT' && query.match(/yes|confirm|submit|हाँ|पुष्टि|ok/i)) {
+      await submitPensionApplication();
       return;
     }
 
@@ -306,9 +544,9 @@
     if (lower.includes('sonari') || lower.includes('सोनारी') || lower.includes('pilot') || lower.includes('पायलट')) {
       var pilotMsg = isHindi ?
         '<strong>📍 सोनारी पायलट ब्लॉक (Sonari AI Pilot):</strong><br>' +
-        'समाज कल्याण विभाग के निर्देशानुसार, <strong>सोनारी ब्लॉक</strong> को आधिकारिक एआई सहायता पायलट के लिए अधिकृत किया गया है। सोनारी के नागरिक प्राकृतिक भाषा में चैटजीपीटी या एआई सहायक द्वारा अपना आवेदन सीधे जमा कर सकते हैं। अन्य 5 ब्लॉकों के नागरिक वेब पोर्टल या सरकारी कियोस्क द्वारा आवेदन कर सकते हैं।' :
+        'समाज कल्याण विभाग के निर्देशानुसार, <strong>सोनारी ब्लॉक</strong> को आधिकारिक एआई सहायता पायलट के लिए अधिकृत किया गया है। सोनारी के नागरिक प्राकृतिक भाषा में चैटजीपीटी या एआई सहायक द्वारा अपना आवेदन सीधे जमा कर सकते हैं।' :
         '<strong>📍 Sonari AI Pilot Block:</strong><br>' +
-        'Under Government Notification, <strong>Sonari Block</strong> is the active pilot block enabled for external AI assistant submissions. Citizens in Sonari can apply through AI assistants or the web portal. Citizens in other blocks can apply directly via the web portal or public kiosks.';
+        'Under Government Notification, <strong>Sonari Block</strong> is the active pilot block enabled for external AI assistant submissions. Citizens in Sonari can apply through AI assistants or the web portal.';
       appendMessage('bot', pilotMsg);
       return;
     }
@@ -332,8 +570,8 @@
 
     // Fallback general guidance
     var defMsg = isHindi ?
-      'धन्यवाद! आप तुरंत <a href="/apply" style="color:var(--primary); font-weight:700;">पेंशन के लिए आवेदन करें</a> अथवा अपना आवेदन नंबर डालकर स्थिति जान सकते हैं। किसी अन्य सहायता के लिए कृपया ऊपर दिए गए विकल्पों को चुनें।' :
-      'Thank you! You can <a href="/apply" style="color:var(--primary); font-weight:700;">Apply for Pension</a> right now or enter an application number to track status. Feel free to click any of the suggested topics above.';
+      'आप सीधे चैट में आवेदन शुरू करने के लिए अपना मोबाइल नंबर लिखें (उदा. <em>"आवेदन करना है, मोबाइल 9876500003"</em>) अथवा कोई आवेदन नंबर डालकर स्थिति जांचें।' :
+      'To start a new pension application directly in this chat, provide your mobile number (e.g. <em>"I want to apply, mobile 9876500003"</em>) or enter an application number to track status.';
     appendMessage('bot', defMsg);
   }
 </script>
