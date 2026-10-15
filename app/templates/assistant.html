@@ -187,8 +187,8 @@
   <div class="prompt-chips-wrapper">
     <div class="prompt-label">{% if current_lang == 'hi' %}सुझाए गए संकेत / तुरंत शुरू करें:{% else %}Suggested Prompts / Quick Actions:{% endif %}</div>
     <div class="prompt-chips">
-      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}मुझे नया पेंशन आवेदन भरना है, मोबाइल 9876500003{% else %}I want to apply for Old Age Pension, mobile 9876500003{% endif %}')">
-        📝 {% if current_lang == 'hi' %}नया आवेदन प्रारंभ करें (9876500003){% else %}Start Application (9876500003){% endif %}
+      <button type="button" class="prompt-chip-btn" onclick="sendPrompt('{% if current_lang == 'hi' %}मुझे नया पेंशन आवेदन भरना है, मोबाइल 9876500004{% else %}I want to apply for Old Age Pension, mobile 9876500004{% endif %}')">
+        📝 {% if current_lang == 'hi' %}नया आवेदन प्रारंभ करें (9876500004){% else %}Start Application (9876500004){% endif %}
       </button>
       <button type="button" class="prompt-chip-btn" onclick="sendPrompt('SSP26424425')">
         🔍 {% if current_lang == 'hi' %}स्थिति जांचें (SSP26424425){% else %}Track Sample (SSP26424425){% endif %}
@@ -275,6 +275,33 @@
       });
       var data = await resp.json();
 
+      if (!data.success) {
+        if (data.status === 'active_application_exists') {
+          var existMsg = isHindi ?
+            '⚠️ <strong>इस मोबाइल नंबर (' + mobileNumber + ') पर पहले से सक्रिय आवेदन मौजूद है:</strong><br>' +
+            '• आवेदन संख्या: <code>' + data.application_no + '</code><br>' +
+            '• वर्तमान स्थिति: <strong>' + data.current_status + '</strong><br><br>' +
+            'सरकारी नियमों के अनुसार, एक नागरिक का एक ही सक्रिय आवेदन हो सकता है। यह आवेदन पहले से ' + data.current_status + ' है।<br>' +
+            '<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">' +
+            '<button type="button" class="btn" style="padding:6px 12px; font-size:13px; min-height:auto;" onclick="sendPrompt(\'' + data.application_no + '\')">🔍 स्थिति देखें (' + data.application_no + ')</button>' +
+            '<button type="button" class="btn btn-ai" style="padding:6px 12px; font-size:13px; min-height:auto;" onclick="sendPrompt(\'I want to apply for pension, mobile 9876500004\')">📝 नए नंबर (9876500004) से आवेदन करें</button>' +
+            '</div>' :
+            '⚠️ <strong>Active Application Already Exists for ' + mobileNumber + ':</strong><br>' +
+            '• Application Number: <code>' + data.application_no + '</code><br>' +
+            '• Current Status: <strong>' + data.current_status + '</strong><br><br>' +
+            'Under Purvanchal state rules, an applicant can hold at most one active application. Since this application is already ' + data.current_status + ', a new OTP is not needed.<br>' +
+            '<div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">' +
+            '<button type="button" class="btn" style="padding:6px 12px; font-size:13px; min-height:auto;" onclick="sendPrompt(\'' + data.application_no + '\')">🔍 Track Status (' + data.application_no + ')</button>' +
+            '<button type="button" class="btn btn-ai" style="padding:6px 12px; font-size:13px; min-height:auto;" onclick="sendPrompt(\'I want to apply for pension, mobile 9876500004\')">📝 Apply with Fresh Mobile (9876500004)</button>' +
+            '</div>';
+          appendMessage('bot', existMsg);
+          return;
+        } else {
+          appendMessage('bot', '⚠️ ' + (data.error || 'Failed to send OTP. Please try again.'));
+          return;
+        }
+      }
+
       // Retrieve latest OTP for inspection helper
       var otpCode = '123456';
       try {
@@ -340,9 +367,10 @@
 
         appendMessage('bot', successMsg + autofillBtn);
       } else {
-        appendMessage('bot', isHindi ? 
-          '❌ ' + (data.error || 'अमान्य अथवा समाप्त हो चुका ओटीपी। कृपया सही 6-अंकीय कोड दर्ज करें।') : 
-          '❌ ' + (data.error || 'Invalid or expired OTP. Please enter the valid 6-digit code.'));
+        var retryMsg = isHindi ? 
+          '❌ ' + (data.error || 'अमान्य अथवा समाप्त हो चुका ओटीपी।') + '<br><button type="button" class="btn btn-ai" style="margin-top:8px; padding:6px 12px; font-size:13px; min-height:auto;" onclick="triggerOtpSend(\'' + appState.mobile + '\')">🔄 नया ओटीपी पुनः भेजें</button>' : 
+          '❌ ' + (data.error || 'Invalid or expired OTP.') + '<br><button type="button" class="btn btn-ai" style="margin-top:8px; padding:6px 12px; font-size:13px; min-height:auto;" onclick="triggerOtpSend(\'' + appState.mobile + '\')">🔄 Resend Fresh OTP</button>';
+        appendMessage('bot', retryMsg);
       }
     } catch (err) {
       appendMessage('bot', isHindi ? '⚠️ सत्यापन त्रुटि।' : '⚠️ Verification error. Please try again.');
