@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-10-15 10:52:29",
+  "total_tests": 58,
+  "passed_tests": 58,
+  "failed_tests": 0,
+  "duration_seconds": 2.256,
+  "success": true,
+  "suites": [
+    "test_shared_services.py",
+    "test_citizen_mcp.py",
+    "test_citizen_ux_privacy.py",
+    "test_officer_mcp.py",
+    "test_automatic_approval.py",
+    "test_e2e_security_resilience.py"
+  ],
+  "failures": [],
+  "errors": []
+}

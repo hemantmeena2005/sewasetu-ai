@@ -24,6 +24,7 @@ def now_ist():
     return datetime.now(IST).replace(tzinfo=None)
 
 import requests
+import json
 import psycopg2
 import werkzeug
 if not hasattr(werkzeug, "__version__"):
@@ -347,21 +348,36 @@ def upload():
         if f is None or f.filename == "":
             flash("Please choose a file to upload (JPG, PNG or PDF, up to 5 MB).")
             return render_template("upload.html")
-        filename = f.filename.lower()
-        content = f.read()
-        if not filename.rsplit(".", 1)[-1] in ("pdf", "jpg", "jpeg", "png"):
+        filename = os.path.basename(f.filename.lower().strip())
+        ext = filename.rsplit(".", 1)[-1] if "." in filename else ""
+        if ext not in ("pdf", "jpg", "jpeg", "png"):
             flash("Please upload a JPG, PNG or PDF file.")
             return render_template("upload.html")
+        content = f.read()
         if len(content) > 5 * 1024 * 1024:
             flash("File is larger than 5 MB. Please upload a smaller file.")
             return render_template("upload.html")
+
+        # Magic byte validation to prevent spoofed extensions
+        if ext == "pdf" and not content.startswith(b"%PDF"):
+            flash("Invalid PDF document: file header verification failed.")
+            return render_template("upload.html")
+        if ext in ("jpg", "jpeg") and not content.startswith(b"\xff\xd8\xff"):
+            flash("Invalid JPEG image: file header verification failed.")
+            return render_template("upload.html")
+        if ext == "png" and not content.startswith(b"\x89PNG\r\n\x1a\n"):
+            flash("Invalid PNG image: file header verification failed.")
+            return render_template("upload.html")
+
         os.makedirs(UPLOAD_DIR, exist_ok=True)
-        path = os.path.join(UPLOAD_DIR, "%s_%s" % (session["verified_mobile"], filename))
+        safe_name = "%s_%s" % (session["verified_mobile"], filename)
+        path = os.path.join(UPLOAD_DIR, safe_name)
         with open(path, "wb") as out:
             out.write(content)
         session["doc_path"] = path
         return redirect(url_for("declaration"))
     return render_template("upload.html")
+
 
 
 @app.route("/declaration", methods=["GET", "POST"])
@@ -655,6 +671,98 @@ def admin_approve(app_id):
 @app.route("/admin/reject/<int:app_id>", methods=["POST"])
 def admin_reject(app_id):
     return _admin_decide(app_id, "REJECTED", request.form.get("note", ""))
+
+
+@app.route("/admin/document/<int:app_id>")
+def admin_document(app_id):
+    """Securely serve an applicant's age-proof document to an authorized officer."""
+    if not session.get("admin"):
+        abort(403)
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT block, doc_path FROM applications WHERE id = %s", (app_id,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
+    if not row:
+        abort(404)
+    app_block, doc_path = row
+    officer_user = session.get("admin_user", ADMIN_USERNAME)
+    if not services.check_officer_block_access(officer_user, app_block):
+        abort(403)
+    if not doc_path or not os.path.exists(doc_path):
+        abort(404)
+
+    # Prevent path traversal
+    real_doc = os.path.realpath(doc_path)
+    real_upload = os.path.realpath(UPLOAD_DIR)
+    if not real_doc.startswith(real_upload):
+        abort(403)
+
+    ext = os.path.splitext(doc_path)[1].lower()
+    mimetypes = {".pdf": "application/pdf", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png"}
+    return send_file(doc_path, mimetype=mimetypes.get(ext, "application/octet-stream"))
+
+
+@app.route("/admin/evaluation")
+def admin_evaluation():
+    """Live System Evaluation and Test Verification Dashboard."""
+    if not session.get("admin"):
+        return redirect(url_for("admin_login"))
+
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT status, count(*) FROM applications GROUP BY status")
+    by_status = dict(cur.fetchall())
+    cur.execute("SELECT action, count(*) FROM audit_log GROUP BY action")
+    by_action = dict(cur.fetchall())
+    cur.execute("SELECT count(*) FROM applications")
+    total_apps = cur.fetchone()[0]
+
+    # Live recent audit / security event stream (max 30)
+    cur.execute(
+        """SELECT a.id, a.application_no, a.block, l.action, l.actor, l.note, l.at
+           FROM audit_log l
+           LEFT JOIN applications a ON a.id = l.application_id
+           ORDER BY l.at DESC LIMIT 30"""
+    )
+    events_raw = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    recent_events = [
+        {
+            "app_id": r[0],
+            "application_no": r[1] or "N/A",
+            "block": r[2] or "N/A",
+            "action": r[3],
+            "actor": r[4],
+            "note": r[5] or "",
+            "at": r[6].strftime("%Y-%m-%d %H:%M:%S") if r[6] else ""
+        }
+        for r in events_raw
+    ]
+
+    # Read automated test results if available
+    test_summary = None
+    results_path = os.path.join(BASE_DIR, "..", "tests", "test_results.json")
+    if not os.path.exists(results_path):
+        results_path = os.path.join(BASE_DIR, "tests", "test_results.json")
+    if os.path.exists(results_path):
+        try:
+            with open(results_path, "r") as fh:
+                test_summary = json.load(fh)
+        except Exception:
+            pass
+
+    return render_template(
+        "evaluation.html",
+        by_status=by_status,
+        by_action=by_action,
+        total_apps=total_apps,
+        recent_events=recent_events,
+        test_summary=test_summary
+    )
 
 
 from oauth import oauth as _oauth_blueprint   # noqa: E402  (needs the definitions above)
