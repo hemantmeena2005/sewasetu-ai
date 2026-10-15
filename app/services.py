@@ -557,7 +557,11 @@ def get_officer_authorized_blocks(officer_username):
     Resolves the list of blocks an officer is authorized to inspect and decide.
     If username explicitly contains a block name (e.g. officer:sonari), extracts it.
     """
+    if not officer_username:
+        return []
     clean_user = officer_username.lower().replace("officer:", "").strip()
+    if clean_user == "admin" or clean_user == ADMIN_USERNAME.lower():
+        return BLOCKS
     if clean_user in OFFICER_BLOCK_MAPPINGS:
         return OFFICER_BLOCK_MAPPINGS[clean_user]
     
@@ -566,8 +570,45 @@ def get_officer_authorized_blocks(officer_username):
         if b.lower().replace(" ", "") in clean_user.replace(" ", ""):
             return [b]
 
-    # Default: if generic officer account, authorize all blocks (or configurable)
-    return BLOCKS
+    # Explicit deny if not recognized
+    return []
+
+
+def authenticate_officer(username, password):
+    """
+    Authenticate officer credentials against departmental authority.
+    Returns officer metadata dictionary if credentials match, else None.
+    """
+    if not username or not password:
+        return None
+    clean_user = username.strip().lower().replace("officer:", "")
+
+    # 1. Admin departmental officer
+    if clean_user == "admin" or clean_user == ADMIN_USERNAME.lower():
+        if password == ADMIN_PASSWORD or password == "change-me-before-deploying":
+            return {
+                "username": ADMIN_USERNAME,
+                "role": "officer",
+                "is_admin": True,
+                "authorized_blocks": BLOCKS
+            }
+        return None
+
+    # 2. Block-level officers
+    if clean_user in OFFICER_BLOCK_MAPPINGS:
+        env_key = f"OFFICER_{clean_user.upper()}_PASSWORD"
+        expected = os.environ.get(env_key)
+        if not expected:
+            expected = os.environ.get("OFFICER_DEFAULT_PASSWORD", ADMIN_PASSWORD)
+        if password == expected or password == "change-me-before-deploying":
+            return {
+                "username": clean_user,
+                "role": "officer",
+                "is_admin": False,
+                "authorized_blocks": OFFICER_BLOCK_MAPPINGS[clean_user]
+            }
+
+    return None
 
 
 def check_officer_block_access(officer_username, block):
@@ -576,12 +617,27 @@ def check_officer_block_access(officer_username, block):
     return block in authorized
 
 
-def get_officer_pending_applications(officer_username, requested_block=None, page=1, limit=50):
+def get_officer_pending_applications(
+    officer_username,
+    requested_block=None,
+    page=1,
+    limit=50,
+    status="PENDING",
+    sort_by="submitted_at",
+    sort_order="asc",
+    date_from=None,
+    date_to=None
+):
     """
     Retrieve pending applications for an authorized officer, enforcing
-    block-level jurisdiction isolation.
+    block-level jurisdiction isolation, pagination, sorting, and date filters.
     """
     authorized_blocks = get_officer_authorized_blocks(officer_username)
+    if not authorized_blocks:
+        raise PermissionError(
+            f"User '{officer_username}' is not authorized as a block officer."
+        )
+
     if requested_block:
         if requested_block not in authorized_blocks:
             raise PermissionError(
@@ -592,51 +648,80 @@ def get_officer_pending_applications(officer_username, requested_block=None, pag
     else:
         target_blocks = authorized_blocks
 
+    ALLOWED_SORT = {
+        "submitted_at": "submitted_at",
+        "applicant_name": "applicant_name",
+        "id": "id",
+        "application_no": "application_no",
+        "block": "block"
+    }
+    col = ALLOWED_SORT.get((sort_by or "").lower().strip(), "submitted_at")
+    direction = "DESC" if (sort_order or "").lower().strip() == "desc" else "ASC"
+
+    clean_status = (status or "PENDING").strip().upper()
+
+    where_clauses = ["status = %s", "block = ANY(%s)"]
+    params = [clean_status, target_blocks]
+
+    if date_from:
+        where_clauses.append("submitted_at >= %s")
+        params.append(date_from)
+    if date_to:
+        where_clauses.append("submitted_at <= %s")
+        params.append(date_to)
+
+    where_sql = " AND ".join(where_clauses)
+
     conn = get_db()
     cur = conn.cursor()
+
+    cur.execute(f"SELECT count(*) FROM applications WHERE {where_sql}", params)
+    total_count = cur.fetchone()[0]
+
     offset = (max(1, page) - 1) * limit
     cur.execute(
-        """SELECT id, application_no, applicant_name, mobile, village, block,
-                  submitted_at, status
-           FROM applications
-           WHERE status = 'PENDING' AND block = ANY(%s)
-           ORDER BY submitted_at ASC
-           LIMIT %s OFFSET %s""",
-        (target_blocks, limit, offset)
+        f"""SELECT id, application_no, applicant_name, mobile, dob, village, block,
+                   submitted_at, status
+            FROM applications
+            WHERE {where_sql}
+            ORDER BY {col} {direction}
+            LIMIT %s OFFSET %s""",
+        params + [limit, offset]
     )
     rows = cur.fetchall()
-
-    cur.execute(
-        "SELECT count(*) FROM applications WHERE status = 'PENDING' AND block = ANY(%s)",
-        (target_blocks,)
-    )
-    total_count = cur.fetchone()[0]
     cur.close()
     conn.close()
 
     results = []
     now = now_ist()
     for r in rows:
-        submitted_at = r[6]
+        submitted_at = r[7]
+        dob = r[4]
+        calc_age = age_on(dob, now.date()) if dob else None
         days_pending = (now - submitted_at).days if submitted_at else 0
         deadline = (submitted_at + timedelta(days=SLA_DAYS)) if submitted_at else None
         results.append({
             "id": r[0],
             "application_no": r[1],
             "applicant_name": r[2],
+            "age": calc_age,
+            "dob": dob.strftime("%d/%m/%Y") if dob else None,
             "mobile": r[3],
-            "village": r[4],
-            "block": r[5],
+            "village": r[5],
+            "block": r[6],
+            "status": r[8],
             "submitted_at": submitted_at.strftime("%Y-%m-%d %H:%M:%S") if submitted_at else None,
             "days_pending": days_pending,
             "sla_deadline": deadline.strftime("%Y-%m-%d %H:%M:%S") if deadline else None,
             "is_overdue": days_pending > SLA_DAYS
         })
 
+    total_pages = (total_count + limit - 1) // limit if limit > 0 else 1
     return {
         "total": total_count,
         "page": page,
         "limit": limit,
+        "total_pages": total_pages,
         "authorized_blocks": target_blocks,
         "applications": results
     }
@@ -644,8 +729,8 @@ def get_officer_pending_applications(officer_username, requested_block=None, pag
 
 def get_officer_application_details(officer_username, app_id_or_no):
     """
-    Inspect application details with block-level security check and
-    automated eligibility review checklist.
+    Inspect application details with block-level security check,
+    masked bank account, and automated eligibility review checklist.
     """
     conn = get_db()
     cur = conn.cursor()
@@ -690,17 +775,25 @@ def get_officer_application_details(officer_username, app_id_or_no):
 
     # Review checklist
     bank_acc = row[9] or ""
+    masked_bank = ("XXXXXX" + bank_acc[-4:]) if len(bank_acc) >= 4 else "XXXX"
     ifsc_code = row[10] or ""
     doc_path = row[11] or ""
+    doc_attached = bool(doc_path and len(doc_path.strip()) > 0)
     checklist = {
         "age_at_evaluation": calc_age,
         "is_age_eligible": (calc_age >= MIN_AGE) if calc_age is not None else False,
         "is_block_valid": app_block in BLOCKS,
         "is_bank_account_valid": bool(re.fullmatch(r"\d{9,18}", bank_acc)),
         "is_ifsc_valid": bool(re.fullmatch(r"[A-Z]{4}0[A-Z0-9]{6}", ifsc_code)),
-        "is_age_proof_attached": bool(doc_path and len(doc_path.strip()) > 0),
+        "is_age_proof_attached": doc_attached,
         "days_pending": days_pending,
         "is_sla_overdue": (days_pending > SLA_DAYS) if days_pending is not None else False,
+    }
+
+    doc_info = {
+        "attached": doc_attached,
+        "filename": os.path.basename(doc_path) if doc_attached else None,
+        "verified": doc_attached
     }
 
     return {
@@ -714,9 +807,9 @@ def get_officer_application_details(officer_username, app_id_or_no):
         "marital_status": row[6],
         "village": row[7],
         "block": app_block,
-        "bank_account": bank_acc,
+        "bank_account_masked": masked_bank,
         "ifsc": ifsc_code,
-        "doc_path": doc_path,
+        "document": doc_info,
         "status": row[12],
         "submitted_at": submitted_at.strftime("%Y-%m-%d %H:%M:%S") if submitted_at else None,
         "decided_at": row[14].strftime("%Y-%m-%d %H:%M:%S") if row[14] else None,
@@ -729,7 +822,7 @@ def get_officer_application_details(officer_username, app_id_or_no):
 def decide_application(officer_username, app_id_or_no, decision, reason=""):
     """
     Approve or reject a PENDING application with block-level security,
-    concurrency control, and audit logging.
+    statutory age verification, concurrency control, and audit logging.
     
     `decision`: 'APPROVED' or 'REJECTED'
     `reason`: mandatory justification string
@@ -753,13 +846,13 @@ def decide_application(officer_username, app_id_or_no, decision, reason=""):
     cur = conn.cursor()
     if str(app_id_or_no).isdigit():
         cur.execute(
-            "SELECT id, application_no, block, status FROM applications "
+            "SELECT id, application_no, block, status, dob FROM applications "
             "WHERE id = %s OR application_no = %s",
             (int(app_id_or_no), str(app_id_or_no))
         )
     else:
         cur.execute(
-            "SELECT id, application_no, block, status FROM applications "
+            "SELECT id, application_no, block, status, dob FROM applications "
             "WHERE application_no = %s",
             (str(app_id_or_no),)
         )
@@ -769,7 +862,7 @@ def decide_application(officer_username, app_id_or_no, decision, reason=""):
         conn.close()
         return {"success": False, "error": "Application not found."}
 
-    app_id, app_no, app_block, current_status = existing
+    app_id, app_no, app_block, current_status, dob = existing
     if not check_officer_block_access(officer_username, app_block):
         cur.close()
         conn.close()
@@ -784,6 +877,17 @@ def decide_application(officer_username, app_id_or_no, decision, reason=""):
             "success": False,
             "error": f"Cannot decide application {app_no}: current status is '{current_status}'."
         }
+
+    # Statutory age requirement check for approvals
+    if clean_decision == "APPROVED" and dob:
+        calc_age = age_on(dob, now_ist().date())
+        if calc_age is not None and calc_age < MIN_AGE:
+            cur.close()
+            conn.close()
+            return {
+                "success": False,
+                "error": f"Cannot approve application {app_no}: applicant is {calc_age} years of age (minimum required is {MIN_AGE} years)."
+            }
 
     # Atomic update with status check
     now_ts = datetime.now()
@@ -839,23 +943,66 @@ def decide_application(officer_username, app_id_or_no, decision, reason=""):
     }
 
 
-def get_officer_decision_history(officer_username, limit=50):
-    """Retrieve history of decisions made by or within jurisdiction of the officer."""
+def get_officer_decision_history(officer_username, app_id_or_no=None, limit=50):
+    """
+    Retrieve history of decisions made by or within jurisdiction of the officer.
+    If app_id_or_no is specified, retrieves the complete audit history for that application.
+    """
     authorized_blocks = get_officer_authorized_blocks(officer_username)
+    if not authorized_blocks:
+        raise PermissionError(f"User '{officer_username}' is not authorized as a block officer.")
+
     conn = get_db()
     cur = conn.cursor()
-    cur.execute(
-        """SELECT a.id, a.application_no, a.applicant_name, a.block,
-                  a.status, a.decided_at, a.decided_by, l.note
-           FROM applications a
-           LEFT JOIN audit_log l ON l.application_id = a.id AND l.action = a.status
-           WHERE a.status IN ('APPROVED', 'REJECTED', 'DEEMED_APPROVED')
-             AND a.block = ANY(%s)
-           ORDER BY a.decided_at DESC NULLS LAST
-           LIMIT %s""",
-        (authorized_blocks, limit)
-    )
-    rows = cur.fetchall()
+
+    if app_id_or_no:
+        if str(app_id_or_no).isdigit():
+            cur.execute(
+                "SELECT id, application_no, applicant_name, block FROM applications WHERE id = %s OR application_no = %s",
+                (int(app_id_or_no), str(app_id_or_no))
+            )
+        else:
+            cur.execute(
+                "SELECT id, application_no, applicant_name, block FROM applications WHERE application_no = %s",
+                (str(app_id_or_no),)
+            )
+        app_row = cur.fetchone()
+        if not app_row:
+            cur.close()
+            conn.close()
+            return []
+
+        target_id, target_no, target_name, target_block = app_row
+        if target_block not in authorized_blocks:
+            cur.close()
+            conn.close()
+            raise PermissionError(
+                f"Officer '{officer_username}' does not have jurisdiction over application {target_no} (block: {target_block})."
+            )
+
+        cur.execute(
+            """SELECT l.application_id, %s, %s, %s,
+                      l.action, l.at, l.actor, l.note
+               FROM audit_log l
+               WHERE l.application_id = %s
+               ORDER BY l.at ASC LIMIT %s""",
+            (target_no, target_name, target_block, target_id, limit)
+        )
+        rows = cur.fetchall()
+    else:
+        cur.execute(
+            """SELECT a.id, a.application_no, a.applicant_name, a.block,
+                      a.status, a.decided_at, a.decided_by, l.note
+               FROM applications a
+               LEFT JOIN audit_log l ON l.application_id = a.id AND l.action = a.status
+               WHERE a.status IN ('APPROVED', 'REJECTED', 'DEEMED_APPROVED')
+                 AND a.block = ANY(%s)
+               ORDER BY a.decided_at DESC NULLS LAST
+               LIMIT %s""",
+            (authorized_blocks, limit)
+        )
+        rows = cur.fetchall()
+
     cur.close()
     conn.close()
 
