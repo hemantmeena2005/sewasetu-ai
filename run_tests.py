@@ -53,7 +53,8 @@ def main():
             "test_citizen_ux_privacy.py",
             "test_officer_mcp.py",
             "test_automatic_approval.py",
-            "test_e2e_security_resilience.py"
+            "test_e2e_security_resilience.py",
+            "test_final_acceptance.py"
         ],
         "failures": [
             {"test": str(f[0]), "error": str(f[1])}
