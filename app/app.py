@@ -1000,11 +1000,57 @@ def api_application_status():
     """Check application status by application number."""
     import mcp_citizen
     session_token = request.args.get("session_token", "")
-    application_no = request.args.get("application_no", "")
-    return jsonify(mcp_citizen.get_application_status(
-        session_token=session_token,
-        application_no=application_no
-    ))
+    application_no = request.args.get("application_no", "").strip()
+
+    # Authenticated MCP session lookup if token provided
+    if session_token:
+        res = mcp_citizen.get_application_status(
+            session_token=session_token,
+            application_no=application_no
+        )
+        if res.get("success"):
+            return jsonify(res)
+
+    # Direct public status tracking by application number
+    if application_no:
+        conn = services.get_db()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT id, application_no, applicant_name, status, block, submitted_at, decided_at, decided_by "
+            "FROM applications WHERE application_no = %s",
+            (application_no,)
+        )
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        if row:
+            submitted_dt = row[5]
+            days_pending = (services.now_ist() - submitted_dt).days if submitted_dt and row[3] == "PENDING" else None
+            within_sla = (days_pending is None or days_pending <= services.SLA_DAYS)
+            return jsonify({
+                "success": True,
+                "found": True,
+                "application_no": row[1],
+                "applicant_name": row[2],
+                "status": row[3],
+                "block": row[4],
+                "submission_date": str(row[5])[:10] if row[5] else None,
+                "submitted_date": str(row[5])[:10] if row[5] else None,
+                "decided_at": str(row[6]) if row[6] else None,
+                "decided_by": row[7],
+                "within_sla": within_sla,
+                "message": f"Application {row[1]} is currently {row[3]}."
+            })
+        return jsonify({
+            "success": False,
+            "found": False,
+            "error": f"No application found with number {application_no}."
+        }), 404
+
+    return jsonify({
+        "success": False,
+        "error": "Please provide an application_no (e.g. SSP26424425)."
+    }), 400
 
 
 @app.route("/assistant")
