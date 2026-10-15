@@ -355,179 +355,224 @@
     font-size: 13px;
     color: #94a3b8;
   }
-  /* Floating AI Assistant Chatbot Styles */
-  .chatbot-fab {
+  /* LG-Style Floating AI Assistant Chatbot Styles */
+  .chatbot-fab-btn {
     position: fixed;
     bottom: 24px;
     right: 24px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3.5px solid #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
     z-index: 99999;
     display: flex;
     align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    user-select: none;
-    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
-  .chatbot-fab:hover {
-    transform: scale(1.06) translateY(-2px);
-  }
-  .chatbot-avatar-circle {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    padding: 3px;
-    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45), 0 2px 8px rgba(0,0,0,0.18);
-    position: relative;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    animation: chatbot-pulse 3s infinite ease-in-out;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+    overflow: hidden;
   }
-  @keyframes chatbot-pulse {
-    0%, 100% { box-shadow: 0 8px 24px rgba(79, 70, 229, 0.45); }
-    50% { box-shadow: 0 10px 32px rgba(79, 70, 229, 0.7), 0 0 0 8px rgba(99, 102, 241, 0.16); }
+  .chatbot-fab-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
   }
-  .chatbot-avatar-img {
+  .chatbot-fab-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+    display: block;
     background: #ffffff;
   }
-  .chatbot-status-dot {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%;
-    background: #22c55e;
-    border: 3px solid #ffffff;
-  }
-  .chatbot-fab-callout {
-    background: #ffffff;
-    color: #1e293b;
-    padding: 9px 18px;
-    border-radius: 24px;
-    font-size: 14px;
-    font-weight: 700;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.16);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid rgba(99, 102, 241, 0.25);
-    animation: chatbot-fade-in 0.4s ease;
-  }
-  .callout-badge {
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 800;
-    padding: 2px 8px;
-    border-radius: 12px;
-    letter-spacing: 0.5px;
-  }
-  .chatbot-modal {
+  .chatbot-close-fab {
     position: fixed;
-    bottom: 96px;
+    bottom: 24px;
     right: 24px;
-    width: 420px;
-    max-width: calc(100vw - 32px);
-    height: 600px;
-    max-height: calc(100vh - 120px);
-    background: #ffffff;
-    border-radius: 18px;
-    box-shadow: 0 20px 45px rgba(11, 61, 110, 0.25), 0 4px 14px rgba(0,0,0,0.12);
-    border: 1px solid rgba(226, 232, 240, 0.9);
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: #2b2e33;
+    color: #ffffff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.32);
+    cursor: pointer;
     z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    animation: chatbot-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 300;
+    line-height: 1;
+    transition: transform 0.2s ease, background 0.15s ease;
   }
-  @keyframes chatbot-slide-up {
-    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  .chatbot-close-fab:hover {
+    transform: scale(1.08);
+    background: #1e2023;
+  }
+
+  /* LG-Style Card Window */
+  .lg-bot-card {
+    position: fixed;
+    bottom: 98px;
+    right: 24px;
+    width: 360px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 120px);
+    border-radius: 28px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.32), 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 99998;
+    display: none;
+    flex-direction: column;
+    animation: lgMenuSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @keyframes lgMenuSlide {
+    from { opacity: 0; transform: translateY(16px) scale(0.96); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .chatbot-modal-header {
-    background: linear-gradient(135deg, #0b3d6e 0%, #1e40af 100%);
+  .lg-bot-dark-section {
+    background: #2c2f34;
+    padding: 24px 22px 20px;
     color: #ffffff;
-    padding: 14px 18px;
+  }
+  .lg-bot-title {
+    font-size: 24px;
+    font-weight: 300;
+    color: #ffffff;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.2px;
+  }
+  .lg-bot-pills {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .lg-pill-btn {
+    background: #ffffff;
+    color: #111827;
+    border: none;
+    border-radius: 24px;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 100%;
+    display: block;
+    text-decoration: none;
+  }
+  .lg-pill-btn:hover {
+    background: #f1f5f9;
+    transform: translateY(-1px);
+  }
+  .lg-bot-light-section {
+    background: #ebe8e4;
+    padding: 10px 22px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .lg-menu-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .lg-menu-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 13px 4px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    color: #1e293b;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.15s ease, padding-left 0.15s ease;
+  }
+  .lg-menu-row:last-child {
+    border-bottom: none;
+  }
+  .lg-menu-row:hover {
+    color: var(--primary);
+    padding-left: 4px;
+  }
+  .lg-chevron {
+    color: #64748b;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .lg-bottom-pill {
+    display: block;
+    width: 100%;
+    background: #ffffff;
+    color: #111827;
+    border: 1.5px solid #d1d5db;
+    border-radius: 24px;
+    padding: 11px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    margin-top: 14px;
+  }
+  .lg-bottom-pill:hover {
+    background: #f8fafc;
+    border-color: #9ca3af;
+  }
+  /* Live Chat Pane inside Card */
+  .lg-chat-pane {
+    height: 560px;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+  }
+  .lg-chat-pane-header {
+    background: #2c2f34;
+    color: #ffffff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
     flex-shrink: 0;
   }
-  .chatbot-modal-header-brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .chatbot-modal-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(255,255,255,0.85);
-    background: #fff;
-  }
-  .chatbot-modal-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #ffffff;
-    line-height: 1.2;
-  }
-  .chatbot-modal-sub {
-    font-size: 12px;
+  .lg-chat-back-btn {
+    background: transparent;
     color: #cbd5e1;
-    margin-top: 2px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .online-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #22c55e;
-    display: inline-block;
-  }
-  .chatbot-modal-controls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .chatbot-control-btn {
-    background: rgba(255,255,255,0.15);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    cursor: pointer;
-    text-decoration: none;
-    transition: background 0.15s ease;
-  }
-  .chatbot-control-btn:hover {
-    background: rgba(255,255,255,0.3);
+  .lg-chat-back-btn:hover {
     color: #ffffff;
   }
-  .chatbot-modal-body {
+  .lg-chat-iframe {
     flex: 1;
-    background: #f8fafc;
-    position: relative;
-    overflow: hidden;
-  }
-  .chatbot-iframe {
     width: 100%;
-    height: 100%;
     border: none;
     display: block;
+  }
+  @media (max-width: 600px) {
+    .lg-bot-card {
+      bottom: 0;
+      right: 0;
+      width: 100vw;
+      max-width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+    }
   }
   @media (max-width: 900px) {
     .header { padding: 10px 18px; flex-wrap: wrap; }
@@ -642,61 +687,123 @@
 </footer>
 
 {% if request.path != '/assistant' %}
-<!-- Floating AI Assistant Chatbot Widget (Bottom Right) -->
-<div id="sewasetu-chatbot-fab" class="chatbot-fab" onclick="toggleChatbot()" title="Chat with AI Assistant" aria-label="Open AI Pension Chatbot">
-  <div class="chatbot-fab-callout" id="chatbot-fab-callout">
-    <span class="callout-badge">AI 24/7</span>
-    <span class="callout-text">{% if current_lang == 'hi' %}सहायता चाहिए? चैट करें{% else %}Need Help? Chat with AI{% endif %}</span>
-  </div>
-  <div class="chatbot-avatar-circle">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfBjUGlVk0m0R4Zw0cm_-PwRUDaVK-pV86W8gaKIeFxw&s=10"
-         onerror="this.src='/static/chatbot_avatar.png'"
-         alt="Sewa Setu AI Assistant" class="chatbot-avatar-img">
-    <span class="chatbot-status-dot" title="Online"></span>
-  </div>
+<!-- Floating AI Assistant Button (Bottom Right) -->
+<div id="sewasetu-chatbot-fab" class="chatbot-fab-btn" onclick="toggleChatbotMenu()" title="Sewa Setu AI Assistant" aria-label="Open AI Assistant Menu">
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfBjUGlVk0m0R4Zw0cm_-PwRUDaVK-pV86W8gaKIeFxw&s=10"
+       onerror="this.src='/static/chatbot_avatar.png'"
+       alt="Sewa Setu AI Assistant" class="chatbot-fab-img">
 </div>
 
-<!-- Chatbot Popup Modal Window -->
-<div id="sewasetu-chatbot-modal" class="chatbot-modal" style="display:none;" aria-hidden="true">
-  <div class="chatbot-modal-header">
-    <div class="chatbot-modal-header-brand">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfBjUGlVk0m0R4Zw0cm_-PwRUDaVK-pV86W8gaKIeFxw&s=10"
-           onerror="this.src='/static/chatbot_avatar.png'"
-           alt="AI Assistant" class="chatbot-modal-avatar">
-      <div>
-        <div class="chatbot-modal-title">{% if current_lang == 'hi' %}सेवा सेतु एआई सहायक{% else %}Sewa Setu AI Assistant{% endif %}</div>
-        <div class="chatbot-modal-sub">
-          <span class="online-indicator"></span> {% if current_lang == 'hi' %}सक्रिय मार्गदर्शक · 24/7 लाइव{% else %}Active Guide &middot; 24/7 Live{% endif %}
-        </div>
+<!-- Floating Dark Close Button (Bottom Right when open) -->
+<div id="sewasetu-chatbot-close" class="chatbot-close-fab" onclick="toggleChatbotMenu()" title="Close menu" aria-label="Close menu">
+  &times;
+</div>
+
+<!-- LG-Style Assistant Popup Card -->
+<div id="sewasetu-chatbot-modal" class="lg-bot-card" aria-hidden="true">
+  <!-- View 1: Quick Help Menu (matching screenshot) -->
+  <div id="lg-menu-view">
+    <div class="lg-bot-dark-section">
+      <h3 class="lg-bot-title">
+        {% if current_lang == 'hi' %}मैं आपकी क्या सहायता करूँ ?{% else %}How may I help you ?{% endif %}
+      </h3>
+      <div class="lg-bot-pills">
+        <button type="button" class="lg-pill-btn" onclick="openLiveChat('apply')">
+          {% if current_lang == 'hi' %}पेंशन आवेदन के बारे में चैट करें{% else %}Chat about pension application.{% endif %}
+        </button>
+        <button type="button" class="lg-pill-btn" onclick="openLiveChat('status')">
+          {% if current_lang == 'hi' %}आवेदन स्थिति के बारे में चैट करें{% else %}Chat about application status.{% endif %}
+        </button>
+        <button type="button" class="lg-pill-btn" onclick="openLiveChat('eligibility')">
+          {% if current_lang == 'hi' %}पात्रता नियम व सहायता (60+ वर्ष){% else %}Check scheme eligibility & aid.{% endif %}
+        </button>
       </div>
     </div>
-    <div class="chatbot-modal-controls">
-      <a href="/assistant" target="_blank" title="Open full screen in new tab" class="chatbot-control-btn" aria-label="Full screen">
-        ↗
-      </a>
-      <button type="button" onclick="toggleChatbot()" title="Close chat" class="chatbot-control-btn" aria-label="Close chat">
-        &times;
+
+    <div class="lg-bot-light-section">
+      <div class="lg-menu-list">
+        <a href="/apply" class="lg-menu-row">
+          <span>{% if current_lang == 'hi' %}नया पेंशन आवेदन शुरू करें{% else %}Start New Pension Application{% endif %}</span>
+          <span class="lg-chevron">&rsaquo;</span>
+        </a>
+        <a href="/status" class="lg-menu-row">
+          <span>{% if current_lang == 'hi' %}आवेदन स्थिति जांचें{% else %}Track Application Status{% endif %}</span>
+          <span class="lg-chevron">&rsaquo;</span>
+        </a>
+        <a href="/status?mode=otp" class="lg-menu-row">
+          <span>{% if current_lang == 'hi' %}मोबाइल ओटीपी से लॉगिन{% else %}Login with Mobile OTP{% endif %}</span>
+          <span class="lg-chevron">&rsaquo;</span>
+        </a>
+        <a href="/status/reset" class="lg-menu-row">
+          <span>{% if current_lang == 'hi' %}पासवर्ड रीसेट करें{% else %}Reset Account Password{% endif %}</span>
+          <span class="lg-chevron">&rsaquo;</span>
+        </a>
+        <a href="/about" class="lg-menu-row">
+          <span>{% if current_lang == 'hi' %}योजना के नियम व आरटीपीएस समय-सीमा{% else %}Scheme Rules & 15-Day RTPS SLA{% endif %}</span>
+          <span class="lg-chevron">&rsaquo;</span>
+        </a>
+      </div>
+
+      <button type="button" class="lg-bottom-pill" onclick="openLiveChat('general')">
+        {% if current_lang == 'hi' %}पूर्ण एआई चैट सहायक खोलें ↗{% else %}Chat with AI Assistant ↗{% endif %}
       </button>
     </div>
   </div>
-  <div class="chatbot-modal-body">
-    <iframe src="/assistant?embed=1" title="Sewa Setu AI Chatbot" class="chatbot-iframe"></iframe>
+
+  <!-- View 2: Live Chat Pane -->
+  <div id="lg-chat-view" style="display:none;" class="lg-chat-pane">
+    <div class="lg-chat-pane-header">
+      <button type="button" class="lg-chat-back-btn" onclick="showMenuView()">
+        &larr; {% if current_lang == 'hi' %}वापस विकल्प पर{% else %}Back to options{% endif %}
+      </button>
+      <a href="/assistant" target="_blank" style="color:#cbd5e1; text-decoration:none; font-size:13px; font-weight:600;">
+        {% if current_lang == 'hi' %}नया टैब ↗{% else %}New tab ↗{% endif %}
+      </a>
+    </div>
+    <iframe id="lg-assistant-iframe" src="about:blank" title="Sewa Setu AI Assistant" class="lg-chat-iframe"></iframe>
   </div>
 </div>
 
 <script>
-  function toggleChatbot() {
+  var isChatbotOpen = false;
+
+  function toggleChatbotMenu() {
     var modal = document.getElementById('sewasetu-chatbot-modal');
-    var callout = document.getElementById('chatbot-fab-callout');
+    var openFab = document.getElementById('sewasetu-chatbot-fab');
+    var closeFab = document.getElementById('sewasetu-chatbot-close');
     if (!modal) return;
-    if (modal.style.display === 'none' || modal.style.display === '') {
+
+    if (!isChatbotOpen) {
       modal.style.display = 'flex';
       modal.setAttribute('aria-hidden', 'false');
-      if (callout) callout.style.display = 'none';
+      openFab.style.display = 'none';
+      closeFab.style.display = 'flex';
+      isChatbotOpen = true;
     } else {
       modal.style.display = 'none';
       modal.setAttribute('aria-hidden', 'true');
+      openFab.style.display = 'flex';
+      closeFab.style.display = 'none';
+      isChatbotOpen = false;
     }
+  }
+
+  function openLiveChat(intent) {
+    var menuView = document.getElementById('lg-menu-view');
+    var chatView = document.getElementById('lg-chat-view');
+    var iframe = document.getElementById('lg-assistant-iframe');
+    if (!iframe.src || iframe.src === 'about:blank' || iframe.src.indexOf('/assistant') === -1) {
+      iframe.src = '/assistant?embed=1&intent=' + encodeURIComponent(intent || 'general');
+    }
+    menuView.style.display = 'none';
+    chatView.style.display = 'flex';
+  }
+
+  function showMenuView() {
+    var menuView = document.getElementById('lg-menu-view');
+    var chatView = document.getElementById('lg-chat-view');
+    chatView.style.display = 'none';
+    menuView.style.display = 'block';
   }
 </script>
 {% endif %}
