@@ -1019,6 +1019,26 @@ def privacy_policy():
     return render_template("privacy.html")
 
 
+@app.route("/.well-known/ai-plugin.json", methods=["GET"])
+def ai_plugin_manifest():
+    """Standard OpenAI plugin manifest pointing to OpenAPI spec."""
+    return jsonify({
+        "schema_version": "v1",
+        "name_for_human": "Sewa Setu Pension Assistant",
+        "name_for_model": "sewasetu_assistant",
+        "description_for_human": "Check eligibility, verify OTP, submit applications, and track pension status.",
+        "description_for_model": "Authoritative citizen pension services for the Old Age Pension Scheme, Government of Purvanchal.",
+        "auth": {"type": "none"},
+        "api": {
+            "type": "openapi",
+            "url": "https://sewasetu-ai.onrender.com/api/openapi.json"
+        },
+        "logo_url": "https://sewasetu-ai.onrender.com/static/favicon.ico",
+        "contact_email": "support@sewasetu.gov.in",
+        "legal_info_url": "https://sewasetu-ai.onrender.com/privacy"
+    })
+
+
 @app.route("/api/openapi.json", methods=["GET"])
 def api_openapi_json():
     """Authoritative OpenAPI 3.1 specification for ChatGPT Custom GPT Actions."""
