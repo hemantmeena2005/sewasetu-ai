@@ -1019,3 +1019,208 @@ def get_officer_decision_history(officer_username, app_id_or_no=None, limit=50):
         }
         for r in rows
     ]
+
+
+# ---------------------------------------------------------------------------
+# Phase 6: Statutory 15-Day Automatic Deemed Approval Service
+# ---------------------------------------------------------------------------
+
+def calculate_application_deadline(submitted_at):
+    """
+    Derives the authoritative statutory decision deadline from persisted submission timestamp.
+    Under Section 5 of the Purvanchal Right to Public Services Act, statutory SLA is 15 calendar days.
+    """
+    if not submitted_at:
+        return None
+    return submitted_at + timedelta(days=SLA_DAYS)
+
+
+def is_application_overdue(submitted_at, reference_time=None):
+    """
+    Determines if an application has exceeded the statutory 15-day decision window.
+    """
+    deadline = calculate_application_deadline(submitted_at)
+    if not deadline:
+        return False
+    ref = reference_time or now_ist().replace(tzinfo=None)
+    return ref >= deadline
+
+
+def apply_deemed_approval(app_id_or_no, actor="system:rtps-auto", correlation_id=None):
+    """
+    Atomically evaluates and executes statutory deemed approval on an individual application.
+    Enforces concurrency protection (FOR UPDATE lock), statutory age eligibility,
+    deadline verification, and immutable audit logging.
+    """
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        # Acquire row-level lock to prevent concurrent modifications
+        if str(app_id_or_no).isdigit():
+            cur.execute(
+                """SELECT id, application_no, applicant_name, mobile, dob, village, block,
+                          status, submitted_at
+                   FROM applications
+                   WHERE id = %s OR application_no = %s
+                   FOR UPDATE""",
+                (int(app_id_or_no), str(app_id_or_no))
+            )
+        else:
+            cur.execute(
+                """SELECT id, application_no, applicant_name, mobile, dob, village, block,
+                          status, submitted_at
+                   FROM applications
+                   WHERE application_no = %s
+                   FOR UPDATE""",
+                (str(app_id_or_no),)
+            )
+        row = cur.fetchone()
+        if not row:
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return {"success": False, "error": f"Application '{app_id_or_no}' not found."}
+
+        app_id, app_no, applicant_name, mobile, dob, village, block, current_status, submitted_at = row
+
+        # 1. State check: must be PENDING
+        if current_status != "PENDING":
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return {
+                "success": False,
+                "error": f"Application {app_no} is in terminal status '{current_status}' and cannot be deemed approved."
+            }
+
+        # 2. Deadline check: must have exceeded 15 calendar days
+        deadline = calculate_application_deadline(submitted_at)
+        now_ts = datetime.now()
+        if not deadline or now_ts < deadline:
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return {
+                "success": False,
+                "error": f"Application {app_no} has not reached its statutory deadline ({deadline})."
+            }
+
+        # 3. Statutory eligibility check: applicant must meet age requirement (>= 60)
+        if dob:
+            calc_age = age_on(dob, now_ist().date())
+            if calc_age is not None and calc_age < MIN_AGE:
+                conn.rollback()
+                cur.close()
+                conn.close()
+                return {
+                    "success": False,
+                    "error": f"Application {app_no} does not satisfy statutory age criteria (age: {calc_age}, minimum: {MIN_AGE})."
+                }
+
+        # 4. Atomic status update
+        cur.execute(
+            """UPDATE applications
+               SET status = 'DEEMED_APPROVED', decided_at = %s, decided_by = 'RTPS-AUTO'
+               WHERE id = %s AND status = 'PENDING'
+               RETURNING application_no, mobile""",
+            (now_ts, app_id)
+        )
+        updated = cur.fetchone()
+        if not updated:
+            conn.rollback()
+            cur.close()
+            conn.close()
+            return {
+                "success": False,
+                "error": f"Application {app_no} was decided concurrently by an officer or another worker."
+            }
+
+        # 5. Immutable audit log entry
+        deadline_str = deadline.strftime("%Y-%m-%d %H:%M:%S")
+        ref_note = f" (ref: {correlation_id})" if correlation_id else ""
+        audit_note = (
+            f"Automatically approved under Section 5 of Purvanchal Right to Public Services Act. "
+            f"Statutory 15-day deadline expired on {deadline_str}.{ref_note}"
+        )
+        write_audit(cur, app_id, "DEEMED_APPROVED", actor, audit_note)
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        # 6. Citizen SMS notification
+        send_sms(
+            mobile,
+            f"Sewa Setu: your pension application {app_no} stands approved under the RTPS Act."
+        )
+
+        return {
+            "success": True,
+            "application_id": app_id,
+            "application_no": app_no,
+            "status": "DEEMED_APPROVED",
+            "decided_by": "RTPS-AUTO",
+            "decided_at": now_ts.isoformat(),
+            "deadline": deadline.isoformat(),
+            "note": audit_note
+        }
+    except Exception as e:
+        conn.rollback()
+        cur.close()
+        conn.close()
+        return {"success": False, "error": f"Database transaction error: {str(e)}"}
+
+
+def process_deemed_approvals(batch_size=500, actor="system:rtps-auto", correlation_id=None):
+    """
+    Background batch processor for statutory deemed approvals.
+    Uses PostgreSQL row locking with 'SKIP LOCKED' to allow multiple concurrent scheduler
+    workers without deadlocks, collisions, or duplicate decision processing.
+    """
+    cutoff = datetime.now() - timedelta(days=SLA_DAYS)
+    conn = get_db()
+    cur = conn.cursor()
+    try:
+        # Select pending applications that have exceeded the 15-day cutoff
+        cur.execute(
+            """SELECT id, application_no
+               FROM applications
+               WHERE status = 'PENDING' AND submitted_at < %s
+               ORDER BY submitted_at ASC
+               LIMIT %s
+               FOR UPDATE SKIP LOCKED""",
+            (cutoff, batch_size)
+        )
+        candidates = cur.fetchall()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        cur.close()
+        conn.close()
+        return {
+            "success": False,
+            "error": f"Failed to acquire candidate applications: {str(e)}"
+        }
+
+    approved = []
+    skipped = []
+    errors = []
+
+    for app_id, app_no in candidates:
+        res = apply_deemed_approval(app_id, actor=actor, correlation_id=correlation_id)
+        if res.get("success"):
+            approved.append(app_no)
+        elif "does not satisfy statutory age criteria" in res.get("error", ""):
+            skipped.append({"application_no": app_no, "reason": res["error"]})
+        else:
+            errors.append({"application_no": app_no, "reason": res.get("error")})
+
+    return {
+        "success": True,
+        "scanned": len(candidates),
+        "approved_count": len(approved),
+        "approved_applications": approved,
+        "skipped_ineligible_count": len(skipped),
+        "skipped_ineligible": skipped,
+        "error_count": len(errors),
+        "errors": errors
+    }

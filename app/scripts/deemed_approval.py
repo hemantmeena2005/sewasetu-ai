@@ -1,70 +1,68 @@
 # -*- coding: utf-8 -*-
 """
-Nightly deemed-approval job.
+Nightly deemed-approval job under the Purvanchal Right to Public Services (RTPS) Act.
 
-Under the Purvanchal Right to Public Services Act, an application not processed
-within the statutory SLA stands approved. This job marks such applications
-DEEMED_APPROVED and notifies the applicant by SMS.
+Under Section 5 of the RTPS Act, an eligible application not processed within the
+statutory 15-day period stands automatically approved by operation of law.
+This job identifies overdue applications, verifies statutory eligibility, atomically
+transitions their status to 'DEEMED_APPROVED', generates immutable audit log records,
+and dispatches citizen SMS notifications.
 
-Scheduled via cron, 02:00 daily. See deploy/crontab.
+Compatible with cron execution and persistent daemon execution.
 """
 
 import os
 import sys
-import configparser
-from datetime import datetime, timedelta
+import time
+import argparse
+from datetime import datetime
 
-import psycopg2
-import requests
-
+# Ensure app root is in sys.path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
-config = configparser.ConfigParser()
-CONFIG_PATH = os.path.join(BASE_DIR, "config", "app.ini")
-with open(CONFIG_PATH) as fh:
-    config.read_file(fh)
+import services
 
-SLA_DAYS = config.getint("pension", "sla_days")
-SMS_GATEWAY_URL = config.get("app", "sms_gateway_url")
+
+def run_cycle(batch_size=500, actor="system:rtps-cron"):
+    """Execute a single atomic deemed approval processing cycle."""
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    result = services.process_deemed_approvals(batch_size=batch_size, actor=actor)
+    if not result.get("success"):
+        print(f"[{now_str}] Deemed approval error: {result.get('error')}", file=sys.stderr)
+        return 1
+
+    scanned = result.get("scanned", 0)
+    approved = result.get("approved_count", 0)
+    skipped = result.get("skipped_ineligible_count", 0)
+    errors = result.get("error_count", 0)
+
+    print(
+        f"[{now_str}] RTPS Deemed Approval Job: {scanned} scanned, "
+        f"{approved} automatically approved, {skipped} skipped (ineligible/deficient), {errors} errors."
+    )
+    return 0
 
 
 def main():
-    conn = psycopg2.connect(
-        host=config.get("database", "host"),
-        port=config.get("database", "port"),
-        dbname=config.get("database", "name"),
-        user=config.get("database", "user"),
-        password=config.get("database", "password"),
-    )
-    cur = conn.cursor()
-    cutoff = datetime.now() - timedelta(days=SLA_DAYS)
-    cur.execute(
-        """UPDATE applications
-           SET status = 'DEEMED_APPROVED', decided_at = %s, decided_by = 'RTPS-AUTO'
-           WHERE status = 'PENDING' AND submitted_at < %s
-           RETURNING application_no, mobile""",
-        (datetime.now(), cutoff))
-    rows = cur.fetchall()
-    cur.execute("SELECT id FROM applications WHERE status = 'DEEMED_APPROVED' "
-                "AND decided_by = 'RTPS-AUTO' AND decided_at >= %s",
-                (datetime.now() - timedelta(minutes=1),))
-    for (app_id,) in cur.fetchall():
-        cur.execute("INSERT INTO audit_log (application_id, action, actor, note, at) "
-                    "VALUES (%s, 'DEEMED_APPROVED', 'system:rtps-cron', "
-                    "'not processed within SLA', %s)", (app_id, datetime.now()))
-    conn.commit()
-    for app_no, mobile in rows:
-        try:
-            requests.post(SMS_GATEWAY_URL + "/api/send", json={
-                "to": mobile,
-                "text": "Sewa Setu: your pension application %s stands approved "
-                        "under the RTPS Act." % app_no}, timeout=5)
-        except Exception:
-            pass
-    print("%s deemed approval: %d applications approved"
-          % (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), len(rows)))
-    cur.close()
-    conn.close()
+    parser = argparse.ArgumentParser(description="Purvanchal RTPS Act Statutory Deemed Approval Worker.")
+    parser.add_argument("--batch-size", type=int, default=500, help="Maximum records per batch")
+    parser.add_argument("--actor", type=str, default="system:rtps-cron", help="Audit actor identifier")
+    parser.add_argument("--daemon", action="store_true", help="Run persistently in daemon mode")
+    parser.add_argument("--interval", type=int, default=300, help="Sleep interval in seconds for daemon mode")
+    args = parser.parse_args()
+
+    if args.daemon:
+        print(f"Starting deemed approval background daemon (interval: {args.interval}s)...")
+        while True:
+            try:
+                run_cycle(batch_size=args.batch_size, actor="system:rtps-daemon")
+            except Exception as e:
+                print(f"Daemon worker exception: {e}", file=sys.stderr)
+            time.sleep(args.interval)
+    else:
+        return run_cycle(batch_size=args.batch_size, actor=args.actor)
 
 
 if __name__ == "__main__":
