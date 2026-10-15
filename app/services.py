@@ -62,7 +62,12 @@ UPLOAD_DIR = config.get("app", "upload_dir", fallback="/var/sewasetu/uploads")
 # ---------------------------------------------------------------------------
 
 def get_db():
-    """Returns a new psycopg2 connection using configuration."""
+    """Returns a new psycopg2 connection using configuration or DATABASE_URL."""
+    db_url = os.environ.get("DATABASE_URL")
+    if db_url:
+        if db_url.startswith("postgres://"):
+            db_url = "postgresql://" + db_url[len("postgres://"):]
+        return psycopg2.connect(db_url)
     return psycopg2.connect(
         host=os.environ.get("DB_HOST") or config.get("database", "host"),
         port=int(os.environ.get("DB_PORT") or config.get("database", "port", fallback=5432)),
@@ -70,6 +75,30 @@ def get_db():
         user=os.environ.get("DB_USER") or config.get("database", "user"),
         password=os.environ.get("DB_PASSWORD") or config.get("database", "password"),
     )
+
+
+def init_db_if_needed():
+    """Ensure database tables exist on fresh deployment."""
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'applications');")
+        exists = cur.fetchone()[0]
+        if not exists:
+            schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
+            if os.path.exists(schema_path):
+                with open(schema_path, "r", encoding="utf-8") as f:
+                    cur.execute(f.read())
+                conn.commit()
+            seed_path = os.path.join(os.path.dirname(__file__), "../seed/seed.sql")
+            if os.path.exists(seed_path):
+                with open(seed_path, "r", encoding="utf-8") as f:
+                    cur.execute(f.read())
+                conn.commit()
+        cur.close()
+        conn.close()
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------

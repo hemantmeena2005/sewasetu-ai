@@ -24,6 +24,8 @@ officer_mcp_app = mcp_officer.create_officer_mcp_app()
 @asynccontextmanager
 async def app_lifespan(app):
     """Manage background task groups and lifespans for all mounted MCP servers."""
+    import services
+    services.init_db_if_needed()
     async with citizen_mcp_app.router.lifespan_context(citizen_mcp_app):
         async with officer_mcp_app.raw_app.router.lifespan_context(officer_mcp_app.raw_app):
             yield
