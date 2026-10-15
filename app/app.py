@@ -30,7 +30,7 @@ import werkzeug
 if not hasattr(werkzeug, "__version__"):
     werkzeug.__version__ = "3.0.0"
 from flask import (Flask, request, session, redirect, url_for, render_template,
-                   flash, send_file, abort)
+                   flash, send_file, abort, jsonify)
 from fpdf import FPDF
 import services
 import i18n
@@ -89,18 +89,18 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 # WITHDRAWN and REJECTED applications do not block a fresh application.
 ACTIVE_STATUSES = ("PENDING", "APPROVED", "DEEMED_APPROVED")
 
-SMS_GATEWAY_URL = config.get("app", "sms_gateway_url")
-OTP_VALIDITY_SECONDS = config.getint("app", "otp_validity_seconds")
-UPLOAD_DIR = config.get("app", "upload_dir")
-SCHEME_DEADLINE = datetime.strptime(config.get("pension", "scheme_deadline"),
+SMS_GATEWAY_URL = os.environ.get("SMS_GATEWAY_URL") or config.get("app", "sms_gateway_url")
+OTP_VALIDITY_SECONDS = int(os.environ.get("OTP_VALIDITY_SECONDS") or config.getint("app", "otp_validity_seconds"))
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR") or config.get("app", "upload_dir")
+SCHEME_DEADLINE = datetime.strptime(os.environ.get("SCHEME_DEADLINE") or config.get("pension", "scheme_deadline"),
                                     "%Y-%m-%d %H:%M")
-MIN_AGE = config.getint("pension", "min_age")
-SLA_DAYS = config.getint("pension", "sla_days")
+MIN_AGE = int(os.environ.get("MIN_AGE") or config.getint("pension", "min_age"))
+SLA_DAYS = int(os.environ.get("SLA_DAYS") or config.getint("pension", "sla_days"))
 
 BLOCKS = ["Sonari", "Rajapara", "Dhemaji Pathar", "Borgaon", "Namti", "Khelua"]
 
 import logging
-_logdir = "/var/log/sewasetu"
+_logdir = os.environ.get("LOG_DIR", "/var/log/sewasetu")
 try:
     os.makedirs(_logdir, exist_ok=True)
     _fh = logging.FileHandler(os.path.join(_logdir, "sewasetu-app.log"))
@@ -113,11 +113,11 @@ except Exception:
 
 def get_db():
     return psycopg2.connect(
-        host=config.get("database", "host"),
-        port=config.get("database", "port"),
-        dbname=config.get("database", "name"),
-        user=config.get("database", "user"),
-        password=config.get("database", "password"),
+        host=os.environ.get("DB_HOST") or config.get("database", "host"),
+        port=int(os.environ.get("DB_PORT") or config.get("database", "port", fallback=5432)),
+        dbname=os.environ.get("DB_NAME") or config.get("database", "name"),
+        user=os.environ.get("DB_USER") or config.get("database", "user"),
+        password=os.environ.get("DB_PASSWORD") or config.get("database", "password"),
     )
 
 
@@ -763,6 +763,67 @@ def admin_evaluation():
         recent_events=recent_events,
         test_summary=test_summary
     )
+
+
+# ---------------------------------------------------------------------------
+# Health & Readiness Endpoints (OpenStack, Octavia, Kubernetes, Docker)
+# ---------------------------------------------------------------------------
+
+@app.route("/healthz")
+@app.route("/livez")
+def liveness_check():
+    """Liveness probe: verifies process is responsive without revealing internals."""
+    return jsonify({
+        "status": "healthy",
+        "service": "sewasetu-portal",
+        "timestamp": now_ist().isoformat()
+    }), 200
+
+
+@app.route("/readyz")
+@app.route("/api/health")
+def readiness_check():
+    """Readiness probe: validates database connectivity and persistent storage writability."""
+    checks = {
+        "status": "ready",
+        "service": "sewasetu-portal",
+        "timestamp": now_ist().isoformat(),
+        "database": "unknown",
+        "storage": "unknown"
+    }
+    is_ready = True
+
+    # 1. Check database connectivity
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT 1;")
+        cur.fetchone()
+        cur.close()
+        conn.close()
+        checks["database"] = "connected"
+    except Exception as e:
+        app.logger.error("Readiness check: DB ping failed: %s", e)
+        checks["database"] = "error"
+        is_ready = False
+
+    # 2. Check storage writability
+    try:
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        test_file = os.path.join(UPLOAD_DIR, ".health_check_write_test")
+        with open(test_file, "w") as f:
+            f.write("health-check-ok")
+        if os.path.exists(test_file):
+            os.remove(test_file)
+        checks["storage"] = "writable"
+    except Exception as e:
+        app.logger.error("Readiness check: Storage test failed: %s", e)
+        checks["storage"] = "error"
+        is_ready = False
+
+    status_code = 200 if is_ready else 503
+    checks["status"] = "ready" if is_ready else "unhealthy"
+    return jsonify(checks), status_code
 
 
 from oauth import oauth as _oauth_blueprint   # noqa: E402  (needs the definitions above)

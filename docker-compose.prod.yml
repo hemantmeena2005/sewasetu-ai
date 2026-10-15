@@ -1,0 +1,113 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sewasetu}
+      POSTGRES_USER: ${POSTGRES_USER:-sewasetu}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password must be set in .env.production}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Persistent Cinder storage mount on OpenStack host
+      - /var/sewasetu/pgdata:/var/lib/postgresql/data
+      - ./app/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    networks:
+      - sewasetu-backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sewasetu} -d ${POSTGRES_DB:-sewasetu}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env.production
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      UPLOAD_DIR: /var/sewasetu/uploads
+      LOG_DIR: /var/log/sewasetu
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Persistent Cinder upload storage mount & log directory
+      - /var/sewasetu/uploads:/var/sewasetu/uploads
+      - /var/log/sewasetu:/var/log/sewasetu
+    networks:
+      - sewasetu-backend
+      - sewasetu-frontend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')\" || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2048M
+
+  scheduler:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    restart: always
+    command: ["python", "/app/scripts/deemed_approval.py", "--daemon", "--interval", "300"]
+    env_file:
+      - .env.production
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      LOG_DIR: /var/log/sewasetu
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    volumes:
+      - /var/log/sewasetu:/var/log/sewasetu
+    networks:
+      - sewasetu-backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+
+  proxy:
+    image: nginx:1.25-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /var/sewasetu/ssl:/etc/nginx/ssl/live:ro
+      - /var/log/nginx:/var/log/nginx
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - sewasetu-frontend
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+
+networks:
+  sewasetu-backend:
+    internal: true
+  sewasetu-frontend:
+    driver: bridge

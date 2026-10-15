@@ -81,3 +81,55 @@ portal, checks `aud` is its own canonical URL, and reads `scope`, `role` and `su
 
 Long-lived **program tokens** for unattended use (role officer) are issued by an
 administrator at `/admin/tokens`.
+
+---
+
+## Model Context Protocol (MCP) Integration
+
+Sewa Setu exposes two official MCP servers using **Streamable HTTP (Server-Sent Events)**:
+
+1. **Citizen MCP Server (`/mcp/citizen`)**:
+   - Allows external AI assistants to discover authoritative scheme details, verify mobile OTPs, and submit pension applications with explicit consent.
+   - Tools: `get_scheme_information`, `get_supported_blocks`, `start_application`, `verify_mobile_otp`, `validate_application`, `upload_age_proof`, `submit_application`, `get_application_status`.
+2. **Officer MCP Server (`/mcp/officer`)**:
+   - Allows authorized block officers to review pending applications, inspect eligibility checklists, and record decisions with strict block-level isolation and mandatory confirmation (`officer_confirmed=True`).
+   - Tools: `authenticate_officer`, `get_pending_applications`, `get_application_details`, `get_review_checklist`, `approve_application`, `reject_application`, `get_decision_history`.
+   - Documentation: [docs/OFFICER_MCP.md](docs/OFFICER_MCP.md).
+
+---
+
+## OpenStack Production Deployment
+
+For complete infrastructure specifications, Heat Orchestration Templates, Terraform modules, and operational guides, see:
+👉 **[docs/OPENSTACK_DEPLOYMENT.md](docs/OPENSTACK_DEPLOYMENT.md)**
+
+### Key Deployment Artifacts
+- **OpenStack Heat Template**: `deploy/openstack/heat-sewasetu.yaml`
+- **Terraform OpenStack Module**: `deploy/openstack/main.tf` and `variables.tf`
+- **Cloud-Init Bootstrapper**: `deploy/openstack/cloud-init.yaml`
+- **Hardened Nginx Reverse Proxy**: `deploy/nginx/nginx.conf`
+- **Production Compose**: `docker-compose.prod.yml`
+- **Environment Template**: `.env.example`
+
+### Health & Monitoring Endpoints
+- **Liveness Probe**: `GET /healthz` (HTTP 200 `{"status": "healthy"}`)
+- **Readiness Probe**: `GET /readyz` (Deep PostgreSQL connectivity & storage write check)
+- **Evaluation Dashboard**: `GET /admin/evaluation` (Live security evaluation and test metrics)
+
+### Operations & Maintenance
+```bash
+# Apply database migrations
+python scripts/migrate.py
+
+# Create database backup with SHA-256 checksum
+bash scripts/backup_db.sh
+
+# Restore database from backup
+bash scripts/restore_db.sh /var/sewasetu/backups/<backup_file>.sql.gz
+
+# Run production smoke test suite
+python scripts/verify_production.py --base-url http://localhost:8000
+
+# Run full regression test suite (58/58 tests)
+python run_tests.py
+```

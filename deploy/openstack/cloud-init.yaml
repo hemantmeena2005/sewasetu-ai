@@ -1,0 +1,89 @@
+#cloud-config
+# Cloud-init configuration for Sewa Setu on OpenStack Compute (Ubuntu / Debian)
+
+package_update: true
+package_upgrade: false
+
+packages:
+  - curl
+  - git
+  - ufw
+  - fail2ban
+  - ca-certificates
+  - gnupg
+  - lsb-release
+  - postgresql-client
+  - logrotate
+
+write_files:
+  # 1. Systemd Service for Nightly RTPS Deemed Approval Background Worker
+  - path: /etc/systemd/system/sewasetu-scheduler.service
+    permissions: '0644'
+    content: |
+      [Unit]
+      Description=Sewa Setu RTPS 15-Day Statutory Deemed Approval Background Daemon
+      After=network.target docker.service
+      Wants=docker.service
+
+      [Service]
+      Type=simple
+      WorkingDirectory=/opt/sewasetu
+      ExecStart=/usr/bin/docker compose -f docker-compose.prod.yml exec -T app python /app/scripts/deemed_approval.py --daemon --interval 300
+      Restart=always
+      RestartSec=15
+      StandardOutput=journal
+      StandardError=journal
+
+      [Install]
+      WantedBy=multi-user.target
+
+  # 2. Logrotate configuration for audit logs and application logs
+  - path: /etc/logrotate.d/sewasetu
+    permissions: '0644'
+    content: |
+      /var/log/sewasetu/*.log {
+          daily
+          missingok
+          rotate 30
+          compress
+          delaycompress
+          notifempty
+          create 0640 root root
+      }
+
+runcmd:
+  # 1. Initialize and mount persistent Cinder volume
+  - mkdir -p /var/sewasetu /var/log/sewasetu
+  - |
+    DEVICE="/dev/vdb"
+    if [ -b "$DEVICE" ]; then
+      if ! blkid "$DEVICE" > /dev/null 2>&1; then
+        mkfs.ext4 -F "$DEVICE"
+      fi
+      UUID=$(blkid -s UUID -o value "$DEVICE")
+      if ! grep -q "$UUID" /etc/fstab; then
+        echo "UUID=$UUID /var/sewasetu ext4 defaults,nofail 0 2" >> /etc/fstab
+      fi
+      mount -a || mount "$DEVICE" /var/sewasetu
+    fi
+  - mkdir -p /var/sewasetu/uploads /var/sewasetu/pgdata
+  - chmod 700 /var/sewasetu/uploads /var/sewasetu/pgdata
+
+  # 2. Install Docker & Docker Compose
+  - mkdir -p /etc/apt/keyrings
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  - echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+  - apt-get update
+  - apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+  # 3. Configure Security Group & Local Firewall
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
+  # 4. Create App directory and pull deployment
+  - mkdir -p /opt/sewasetu
+  - chown -R 1000:1000 /var/sewasetu/uploads

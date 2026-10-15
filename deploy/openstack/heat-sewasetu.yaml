@@ -1,0 +1,284 @@
+heat_template_version: 2021-04-16
+
+description: >
+  OpenStack Heat Orchestration Template (HOT) for Sewa Setu Production Deployment.
+  Provisions private networking, security groups, Cinder persistent block storage,
+  Nova compute instance, Floating IP, and automated cloud-init bootstrap for
+  the Citizen Portal, Citizen MCP Server, Officer MCP Server, PostgreSQL DB,
+  and 15-day Deemed Approval Scheduler.
+
+parameters:
+  key_name:
+    type: string
+    description: Name of existing OpenStack Nova keypair for SSH administration
+    constraints:
+      - custom_constraint: nova.keypair
+
+  image_name:
+    type: string
+    description: Base OS image (Ubuntu 22.04 LTS or Debian 12 recommended)
+    default: "Ubuntu-22.04-LTS-Jammy"
+    constraints:
+      - custom_constraint: glance.image
+
+  flavor_name:
+    type: string
+    description: Compute instance flavor (minimum 2 vCPU, 4GB RAM recommended)
+    default: "m1.medium"
+    constraints:
+      - custom_constraint: nova.flavor
+
+  public_network:
+    type: string
+    description: External/public network name or ID providing floating IPs
+    default: "public"
+    constraints:
+      - custom_constraint: neutron.network
+
+  storage_volume_size:
+    type: number
+    description: Persistent Cinder volume size in GB for database and document uploads
+    default: 50
+    constraints:
+      - range: { min: 20, max: 500 }
+
+  admin_password:
+    type: string
+    description: Production departmental administrative master password
+    hidden: true
+    constraints:
+      - length: { min: 12 }
+
+  jwt_secret_key:
+    type: string
+    description: 256-bit cryptographically secure secret for MCP tokens and sessions
+    hidden: true
+    constraints:
+      - length: { min: 32 }
+
+resources:
+  # ---------------------------------------------------------------------------
+  # 1. Private Network & Subnet (Neutron)
+  # ---------------------------------------------------------------------------
+  sewasetu_private_net:
+    type: OS::Neutron::Net
+    properties:
+      name: sewasetu-production-net
+
+  sewasetu_private_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      name: sewasetu-production-subnet
+      network_id: { get_resource: sewasetu_private_net }
+      cidr: 192.168.100.0/24
+      gateway_ip: 192.168.100.1
+      dns_nameservers:
+        - 1.1.1.1
+        - 8.8.8.8
+
+  sewasetu_router:
+    type: OS::Neutron::Router
+    properties:
+      name: sewasetu-production-router
+      external_gateway_info:
+        network: { get_param: public_network }
+
+  sewasetu_router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: sewasetu_router }
+      subnet_id: { get_resource: sewasetu_subnet }
+
+  # ---------------------------------------------------------------------------
+  # 2. Security Groups (Least Privilege Firewall)
+  # ---------------------------------------------------------------------------
+  sewasetu_secgroup:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      name: sewasetu-production-secgroup
+      description: Security group restricting inbound access to HTTPS, HTTP, and admin SSH
+      rules:
+        # Inbound SSH (Port 22) - Administrative management
+        - protocol: tcp
+          port_range_min: 22
+          port_range_max: 22
+          remote_ip_prefix: 0.0.0.0/0
+        # Inbound HTTP (Port 80) - Redirects to HTTPS
+        - protocol: tcp
+          port_range_min: 80
+          port_range_max: 80
+          remote_ip_prefix: 0.0.0.0/0
+        # Inbound HTTPS (Port 443) - Citizen portal, MCP servers, and Webhook APIs
+        - protocol: tcp
+          port_range_min: 443
+          port_range_max: 443
+          remote_ip_prefix: 0.0.0.0/0
+        # Inbound App Port 8000 (Protected or direct testing)
+        - protocol: tcp
+          port_range_min: 8000
+          port_range_max: 8000
+          remote_ip_prefix: 192.168.100.0/24
+        # PostgreSQL (5432) is deliberately NOT opened to public CIDRs (kept private)
+
+  # ---------------------------------------------------------------------------
+  # 3. Persistent Block Storage (Cinder)
+  # ---------------------------------------------------------------------------
+  sewasetu_data_volume:
+    type: OS::Cinder::Volume
+    properties:
+      name: sewasetu-persistent-data-volume
+      description: Persistent storage for PostgreSQL database cluster and citizen upload vault
+      size: { get_param: storage_volume_size }
+      volume_type: "high-iops"
+
+  # ---------------------------------------------------------------------------
+  # 4. Compute Instance (Nova)
+  # ---------------------------------------------------------------------------
+  sewasetu_server:
+    type: OS::Nova::Server
+    properties:
+      name: sewasetu-app-production
+      image: { get_param: image_name }
+      flavor: { get_param: flavor_name }
+      key_name: { get_param: key_name }
+      networks:
+        - port: { get_resource: sewasetu_server_port }
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/bash
+            set -euo pipefail
+
+            echo "=== [Sewa Setu] Beginning OpenStack Instance Initialization ==="
+
+            # 1. Mount persistent Cinder volume to /var/sewasetu
+            mkdir -p /var/sewasetu /var/log/sewasetu
+            DEVICE="/dev/vdb"
+            if [ -b "$DEVICE" ]; then
+              if ! blkid "$DEVICE" > /dev/null; then
+                echo "Formatting persistent volume $DEVICE as ext4..."
+                mkfs.ext4 -F "$DEVICE"
+              fi
+              UUID=$(blkid -s UUID -o value "$DEVICE")
+              if ! grep -q "$UUID" /etc/fstab; then
+                echo "UUID=$UUID /var/sewasetu ext4 defaults,nofail 0 2" >> /etc/fstab
+              fi
+              mount -a || mount "$DEVICE" /var/sewasetu
+            fi
+
+            mkdir -p /var/sewasetu/uploads /var/sewasetu/pgdata
+            chmod 700 /var/sewasetu/uploads /var/sewasetu/pgdata
+
+            # 2. Install Docker, Docker Compose, and dependencies
+            apt-get update
+            apt-get install -y ca-certificates curl gnupg lsb-release git ufw fail2ban
+            mkdir -p /etc/apt/keyrings
+            curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+            apt-get update
+            apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+            # 3. Configure local host firewall (UFW)
+            ufw default deny incoming
+            ufw default allow outgoing
+            ufw allow 22/tcp
+            ufw allow 80/tcp
+            ufw allow 443/tcp
+            ufw --force enable
+
+            # 4. Clone or stage application deployment
+            APP_DIR="/opt/sewasetu"
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            # 5. Write Production Environment configuration
+            cat << 'ENVEOF' > "$APP_DIR/.env.production"
+            POSTGRES_DB=sewasetu
+            POSTGRES_USER=sewasetu
+            POSTGRES_PASSWORD=__DB_PASSWORD_PLACEHOLDER__
+            DB_HOST=db
+            DB_PORT=5432
+            SECRET_KEY=__JWT_SECRET__
+            JWT_SECRET_KEY=__JWT_SECRET__
+            ADMIN_USERNAME=admin
+            ADMIN_PASSWORD=__ADMIN_PASSWORD__
+            PUBLIC_BASE_URL=https://sewasetu.purvanchal.gov.in
+            SMS_GATEWAY_URL=http://smsgw:8025
+            UPLOAD_DIR=/var/sewasetu/uploads
+            LOG_DIR=/var/log/sewasetu
+            SLA_DAYS=15
+            SCHEME_DEADLINE=2026-10-31 23:59
+            MIN_AGE=60
+            ENVEOF
+
+            echo "=== [Sewa Setu] Cloud-init bootstrapping completed successfully ==="
+          params:
+            __ADMIN_PASSWORD__: { get_param: admin_password }
+            __JWT_SECRET__: { get_param: jwt_secret_key }
+
+  sewasetu_server_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: sewasetu_private_net }
+      fixed_ips:
+        - subnet_id: { get_resource: sewasetu_private_subnet }
+      security_groups:
+        - { get_resource: sewasetu_secgroup }
+
+  sewasetu_volume_attachment:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      volume_id: { get_resource: sewasetu_data_volume }
+      instance_uuid: { get_resource: sewasetu_server }
+      mountpoint: /dev/vdb
+
+  # ---------------------------------------------------------------------------
+  # 5. Floating IP (Neutron Public Accessibility)
+  # ---------------------------------------------------------------------------
+  sewasetu_floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_network }
+      port_id: { get_resource: sewasetu_server_port }
+
+outputs:
+  server_private_ip:
+    description: Internal private IP of the Sewa Setu application server
+    value: { get_attr: [sewasetu_server, first_address] }
+
+  server_public_ip:
+    description: Public floating IP address assigned to the Sewa Setu server
+    value: { get_attr: [sewasetu_floating_ip, floating_ip_address] }
+
+  citizen_portal_url:
+    description: Production URL for Citizen Old Age Pension Portal
+    value:
+      str_replace:
+        template: "https://__IP__/"
+        params:
+          __IP__: { get_attr: [sewasetu_floating_ip, floating_ip_address] }
+
+  citizen_mcp_url:
+    description: Authoritative Streamable HTTP endpoint for Citizen MCP Server
+    value:
+      str_replace:
+        template: "https://__IP__/mcp/citizen"
+        params:
+          __IP__: { get_attr: [sewasetu_floating_ip, floating_ip_address] }
+
+  officer_mcp_url:
+    description: Authoritative Streamable HTTP endpoint for Officer Review MCP Server
+    value:
+      str_replace:
+        template: "https://__IP__/mcp/officer"
+        params:
+          __IP__: { get_attr: [sewasetu_floating_ip, floating_ip_address] }
+
+  health_endpoint:
+    description: Production Readiness and Liveness probe URL
+    value:
+      str_replace:
+        template: "https://__IP__/readyz"
+        params:
+          __IP__: { get_attr: [sewasetu_floating_ip, floating_ip_address] }
