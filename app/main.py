@@ -54,7 +54,23 @@ application = Starlette(
     lifespan=app_lifespan
 )
 
-app = application
+class TrailingSlashNormalizeMiddleware:
+    """
+    Ensures URLs without trailing slashes (e.g. /mcp/citizen and /mcp/officer)
+    route seamlessly into mounted Starlette ASGI MCP sub-applications.
+    """
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") == "http":
+            path = scope.get("path", "")
+            if path in ("/mcp/citizen", "/mcp/officer"):
+                scope["path"] = path + "/"
+        await self.app(scope, receive, send)
+
+
+app = TrailingSlashNormalizeMiddleware(application)
 
 if __name__ == "__main__":
     import uvicorn
