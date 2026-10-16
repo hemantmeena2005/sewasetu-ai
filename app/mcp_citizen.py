@@ -246,7 +246,7 @@ def verify_mobile_otp(mobile: str, otp: str) -> Dict[str, Any]:
             (clean_otp,)
         )
         found_otp = cur.fetchone()
-        if found_otp and (datetime.now() - found_otp[2]).total_seconds() <= 300:
+        if found_otp and (datetime.now() - found_otp[2]).total_seconds() <= 900:
             clean_mobile = found_otp[0]
         else:
             cur.close()
@@ -266,7 +266,7 @@ def verify_mobile_otp(mobile: str, otp: str) -> Dict[str, Any]:
         latest = cur.fetchone()
         cur.close()
         conn.close()
-        if latest and (datetime.now() - latest[1]).total_seconds() > 300:
+        if latest and (datetime.now() - latest[1]).total_seconds() > 900:
             return {"verified": False, "error": "OTP has expired. Please request a new OTP via start_application."}
         return {"verified": False, "error": "Invalid OTP code."}
 
@@ -274,7 +274,7 @@ def verify_mobile_otp(mobile: str, otp: str) -> Dict[str, Any]:
     conn.close()
 
     age_seconds = (datetime.now() - row[2]).total_seconds()
-    if age_seconds > 300:
+    if age_seconds > 900:
         return {"verified": False, "error": "OTP has expired. Please request a new OTP via start_application."}
 
     # Mint verified citizen session token
