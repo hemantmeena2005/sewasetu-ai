@@ -238,18 +238,27 @@ def verify_mobile_otp(mobile: str, otp: str) -> Dict[str, Any]:
 
     conn = services.get_db()
     cur = conn.cursor()
+    # Find matching OTP code for this mobile
     cur.execute(
-        "SELECT code, created_at FROM otps WHERE mobile = %s ORDER BY id DESC LIMIT 1",
-        (clean_mobile,)
+        "SELECT id, code, created_at FROM otps WHERE mobile = %s AND code = %s ORDER BY id DESC LIMIT 1",
+        (clean_mobile, clean_otp)
     )
     row = cur.fetchone()
+
+    if not row:
+        # Check if any OTP was recently issued to give accurate feedback
+        cur.execute("SELECT code, created_at FROM otps WHERE mobile = %s ORDER BY id DESC LIMIT 1", (clean_mobile,))
+        latest = cur.fetchone()
+        cur.close()
+        conn.close()
+        if latest and (datetime.now() - latest[1]).total_seconds() > 300:
+            return {"verified": False, "error": "OTP has expired. Please request a new OTP via start_application."}
+        return {"verified": False, "error": "Invalid OTP code."}
+
     cur.close()
     conn.close()
 
-    if not row or not secrets.compare_digest(row[0], clean_otp):
-        return {"verified": False, "error": "Invalid OTP code."}
-
-    age_seconds = (datetime.now() - row[1]).total_seconds()
+    age_seconds = (datetime.now() - row[2]).total_seconds()
     if age_seconds > 300:
         return {"verified": False, "error": "OTP has expired. Please request a new OTP via start_application."}
 

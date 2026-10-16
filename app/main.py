@@ -32,11 +32,36 @@ async def app_lifespan(app):
 
 
 from starlette.middleware import Middleware
-from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+from starlette.routing import Route
+
+async def mcp_citizen_protected_resource(request):
+    import oauth
+    base = oauth.get_issuer_url()
+    return JSONResponse({
+        "resource": base + "/mcp/citizen",
+        "authorization_servers": [base],
+        "scopes_supported": ["citizen", "officer"],
+        "bearer_methods_supported": ["header"],
+        "resource_documentation": base + "/about"
+    }, headers={"Access-Control-Allow-Origin": "*"})
+
+async def mcp_officer_protected_resource(request):
+    import oauth
+    base = oauth.get_issuer_url()
+    return JSONResponse({
+        "resource": base + "/mcp/officer",
+        "authorization_servers": [base],
+        "scopes_supported": ["citizen", "officer"],
+        "bearer_methods_supported": ["header"],
+        "resource_documentation": base + "/about"
+    }, headers={"Access-Control-Allow-Origin": "*"})
 
 # Unified Starlette Application
 application = Starlette(
     routes=[
+        Route("/mcp/citizen/.well-known/oauth-protected-resource", mcp_citizen_protected_resource, methods=["GET", "OPTIONS"]),
+        Route("/mcp/officer/.well-known/oauth-protected-resource", mcp_officer_protected_resource, methods=["GET", "OPTIONS"]),
         Mount("/mcp/citizen", citizen_mcp_app),
         Mount("/mcp/officer", officer_mcp_app),
         Mount("/", WSGIMiddleware(portal.app)),
