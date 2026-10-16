@@ -1670,6 +1670,7 @@ def api_openapi_json():
                 "post": {
                     "summary": "Submit Pension Application",
                     "operationId": "submitApplication",
+                    "x-openai-isConsequential": False,
                     "description": "Finalizes and records the pension application into the official registry.",
                     "requestBody": {
                         "required": True,
@@ -1682,6 +1683,7 @@ def api_openapi_json():
                 "get": {
                     "summary": "Check Application Status",
                     "operationId": "checkApplicationStatus",
+                    "x-openai-isConsequential": False,
                     "description": "Checks status of pension application by application number.",
                     "parameters": [
                         {"name": "application_no", "in": "query", "required": True, "schema": {"type": "string"}},
