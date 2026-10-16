@@ -708,5 +708,16 @@
       'To start a new pension application directly in this chat, provide your mobile number (e.g. <em>"I want to apply, mobile 9876500003"</em>) or enter an application number to track status.';
     appendMessage('bot', defMsg);
   }
+
+  // Check URL query parameters for auto-prompts from home page
+  window.addEventListener('DOMContentLoaded', function() {
+    var params = new URLSearchParams(window.location.search);
+    var queryText = params.get('q');
+    if (queryText) {
+      setTimeout(function() {
+        sendPrompt(queryText);
+      }, 350);
+    }
+  });
 </script>
 {% endblock %}

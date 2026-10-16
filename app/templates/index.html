@@ -235,6 +235,347 @@
     color: #334155;
     line-height: 1.6;
   }
+
+  /* ========================================================
+     MoSPI MCP Style: "Connect Your AI" & "Try Asking" Sections
+     ======================================================== */
+  .mcp-hub-section {
+    margin: 44px 0 32px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 36px 32px;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  }
+  .mcp-hub-header {
+    text-align: center;
+    max-width: 680px;
+    margin: 0 auto 28px;
+  }
+  .mcp-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+  .mcp-hub-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 10px;
+    letter-spacing: -0.5px;
+  }
+  .mcp-hub-subtitle {
+    font-size: 16px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Tabs switcher for ChatGPT & Claude */
+  .mcp-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 4px;
+    margin-bottom: 28px;
+  }
+  .mcp-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.2s ease;
+  }
+  .mcp-tab-btn:hover {
+    color: #0f172a;
+    background: #f8fafc;
+  }
+  .mcp-tab-btn.active {
+    color: #0f172a;
+    border-bottom-color: #0284c7;
+    background: #f0f9ff;
+  }
+  .mcp-tab-icon {
+    font-size: 20px;
+  }
+
+  .mcp-tab-panel {
+    display: none;
+  }
+  .mcp-tab-panel.active {
+    display: block;
+    animation: fadeIn 0.25s ease-in-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Step by Step Guide Container */
+  .mcp-guide-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px 28px;
+  }
+  .mcp-guide-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mcp-guide-req {
+    font-size: 13px;
+    font-weight: 500;
+    color: #64748b;
+    margin-bottom: 20px;
+  }
+  .mcp-steps-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .mcp-step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-size: 15px;
+    color: #334155;
+    line-height: 1.5;
+  }
+  .mcp-step-index {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .mcp-step-content {
+    flex: 1;
+  }
+
+  /* Config Spec Box */
+  .mcp-config-box {
+    margin: 10px 0;
+    padding: 14px 18px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+  .mcp-config-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .mcp-config-field:last-child {
+    margin-bottom: 0;
+  }
+  .mcp-config-label {
+    width: 130px;
+    font-weight: 700;
+    color: #475569;
+    flex-shrink: 0;
+  }
+  .mcp-url-badge {
+    background: #ecfeff;
+    color: #0e7490;
+    border: 1px solid #a5f3fc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 13.5px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    word-break: break-all;
+  }
+  .copy-btn {
+    background: #ffffff;
+    border: 1px solid #94a3b8;
+    color: #0f172a;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .copy-btn:hover {
+    background: #0284c7;
+    color: #fff;
+    border-color: #0284c7;
+  }
+
+  /* "Already Using MCP" Alert Banner */
+  .mcp-refresh-banner {
+    margin-top: 20px;
+    padding: 14px 18px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #92400e;
+    line-height: 1.5;
+  }
+  .mcp-refresh-banner strong {
+    color: #78350f;
+  }
+
+  /* ========================================================
+     "Try Asking" Interactive Pill Cloud
+     ======================================================== */
+  .try-asking-section {
+    margin: 44px 0 36px;
+    text-align: center;
+    background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 38px 24px;
+  }
+  .try-asking-title {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 8px;
+    letter-spacing: -0.5px;
+  }
+  .try-asking-sub {
+    font-size: 15px;
+    color: #64748b;
+    margin: 0 auto 26px;
+    max-width: 580px;
+  }
+  .try-asking-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .ask-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    user-select: none;
+    text-decoration: none;
+  }
+  .ask-pill:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+  }
+  .ask-pill:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* Pastel Theme Colors matching MoSPI screenshot */
+  .pill-mint {
+    background: #dcfce7;
+    color: #166534;
+    border-color: #bbf7d0;
+  }
+  .pill-mint:hover {
+    background: #bbf7d0;
+    border-color: #86efac;
+  }
+  .pill-blue {
+    background: #e0f2fe;
+    color: #0369a1;
+    border-color: #bae6fd;
+  }
+  .pill-blue:hover {
+    background: #bae6fd;
+    border-color: #7dd3fc;
+  }
+  .pill-purple {
+    background: #f3e8ff;
+    color: #7e22ce;
+    border-color: #e9d5ff;
+  }
+  .pill-purple:hover {
+    background: #e9d5ff;
+    border-color: #d8b4fe;
+  }
+  .pill-amber {
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+  }
+  .pill-amber:hover {
+    background: #fde68a;
+    border-color: #fcd34d;
+  }
+  .pill-rose {
+    background: #ffe4e6;
+    color: #be123c;
+    border-color: #fecdd3;
+  }
+  .pill-rose:hover {
+    background: #fecdd3;
+    border-color: #fda4af;
+  }
+  .pill-slate {
+    background: #f1f5f9;
+    color: #334155;
+    border-color: #cbd5e1;
+  }
+  .pill-slate:hover {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+  }
 </style>
 
 <div class="hero-section">
@@ -387,6 +728,300 @@
   </ol>
 </section>
 
+<!-- ========================================================
+     Connect Your AI (MoSPI Style MCP Integration)
+     ======================================================== -->
+<section class="mcp-hub-section" id="mcp-integration">
+  <div class="mcp-hub-header">
+    <div class="mcp-badge">
+      ⚡ {% if current_lang == 'hi' %}मॉडल संदर्भ प्रोटोकॉल (MCP){% else %}Model Context Protocol (MCP){% endif %}
+    </div>
+    <h3 class="mcp-hub-title">
+      {% if current_lang == 'hi' %}अपने एआई को सेवा सेतु से जोड़ें{% else %}Connect Your AI{% endif %}
+    </h3>
+    <p class="mcp-hub-subtitle">
+      {% if current_lang == 'hi' %}
+      अपने ChatGPT अथवा Claude सहायक को पूर्वांचल सरकार के आधिकारिक सेवा सेतु पेंशन पोर्टल से सीधे जोड़ें।
+      {% else %}
+      Connect your AI assistant (ChatGPT, Claude, Cursor) directly to official Purvanchal Sewa Setu pension services.
+      {% endif %}
+    </p>
+  </div>
+
+  <!-- Tabs Header -->
+  <div class="mcp-tabs" role="tablist">
+    <button type="button" class="mcp-tab-btn active" id="tab-btn-chatgpt" onclick="switchMcpTab('chatgpt')" role="tab" aria-selected="true">
+      <span class="mcp-tab-icon">🤖</span>
+      <span>ChatGPT</span>
+    </button>
+    <button type="button" class="mcp-tab-btn" id="tab-btn-claude" onclick="switchMcpTab('claude')" role="tab" aria-selected="false">
+      <span class="mcp-tab-icon">✳️</span>
+      <span>Claude</span>
+    </button>
+    <button type="button" class="mcp-tab-btn" id="tab-btn-officer" onclick="switchMcpTab('officer')" role="tab" aria-selected="false">
+      <span class="mcp-tab-icon">🏛️</span>
+      <span>{% if current_lang == 'hi' %}अधिकारी MCP{% else %}Officer MCP{% endif %}</span>
+    </button>
+  </div>
+
+  <!-- Tab 1: ChatGPT -->
+  <div class="mcp-tab-panel active" id="tab-panel-chatgpt" role="tabpanel">
+    <div class="mcp-guide-card">
+      <div class="mcp-guide-title">
+        <span>ChatGPT Integration</span>
+        <span style="font-size:12px; font-weight:700; background:#e0f2fe; color:#0369a1; padding:3px 10px; border-radius:999px;">
+          OpenAI MCP Standard
+        </span>
+      </div>
+      <div class="mcp-guide-req">
+        {% if current_lang == 'hi' %}आवश्यकता: ChatGPT Plus / Team / Enterprise या डेवलपर मोड सक्षम{% else %}Requires: ChatGPT Plus, Team, or Developer Mode enabled{% endif %}
+      </div>
+
+      <ol class="mcp-steps-list">
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">1</div>
+          <div class="mcp-step-content">
+            {% if current_lang == 'hi' %}
+            ChatGPT खोलें और नीचे-बाएं अपने प्रोफ़ाइल आइकन पर क्लिक करें।
+            {% else %}
+            Open ChatGPT and click on your profile icon (bottom-left).
+            {% endif %}
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">2</div>
+          <div class="mcp-step-content">
+            Navigate to <strong>Settings</strong> &rarr; <strong>Apps</strong> &rarr; <strong>Advanced Settings</strong>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">3</div>
+          <div class="mcp-step-content">
+            Toggle <strong>Developer Mode</strong> to <strong>"On"</strong>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">4</div>
+          <div class="mcp-step-content">
+            Click <strong>Create App</strong> or <strong>Add MCP Server</strong>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">5</div>
+          <div class="mcp-step-content">
+            <div>{% if current_lang == 'hi' %}सर्वर विवरण कॉन्फ़िगर करें:{% else %}Configure the app:{% endif %}</div>
+            <div class="mcp-config-box">
+              <div class="mcp-config-field">
+                <span class="mcp-config-label">Name:</span>
+                <strong>Sewa Setu Citizen MCP</strong>
+              </div>
+              <div class="mcp-config-field">
+                <span class="mcp-config-label">Server URL:</span>
+                <span class="mcp-url-badge" id="citizen-mcp-url">https://sewasetu-ai.onrender.com/mcp/citizen</span>
+                <button type="button" class="copy-btn" onclick="copyMcpUrl('citizen-mcp-url', this)">📋 Copy</button>
+              </div>
+              <div class="mcp-config-field">
+                <span class="mcp-config-label">Authentication:</span>
+                <span style="color:#059669; font-weight:700;">No Authentication (Public Citizen Endpoint)</span>
+              </div>
+            </div>
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">6</div>
+          <div class="mcp-step-content">
+            Click <strong>Save</strong>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">7</div>
+          <div class="mcp-step-content">
+            {% if current_lang == 'hi' %}
+            कनेक्टर जुड़ने के बाद, <em>Permissions</em> ड्रॉपडाउन खोलकर <strong>Allow all actions</strong> चुनें।
+            {% else %}
+            After the connector is added, open the <em>Permissions</em> dropdown and select <strong>Allow all actions</strong>.
+            {% endif %}
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">8</div>
+          <div class="mcp-step-content">
+            {% if current_lang == 'hi' %}
+            नई चैट खोलें और पूछें: <em>"@SewaSetu क्या मैं सोनारी ब्लॉक में पेंशन के लिए पात्र हूँ?"</em>
+            {% else %}
+            Open a new chat and ask: <em>"@SewaSetu check status for application SSP26424425"</em>
+            {% endif %}
+          </div>
+        </li>
+      </ol>
+
+      <div class="mcp-refresh-banner">
+        <span style="font-size:22px;">💡</span>
+        <div>
+          <strong>{% if current_lang == 'hi' %}पहले से ChatGPT पर Sewa Setu MCP का उपयोग कर रहे हैं?{% else %}Already using Sewa Setu MCP on ChatGPT?{% endif %}</strong><br>
+          {% if current_lang == 'hi' %}
+          यदि आपने हाल ही में सेवा सेतु एमसीपी को जोड़ा है, तो नवीनतम टूल्स प्राप्त करने के लिए ChatGPT सेटिंग्स में <strong>Refresh connector</strong> पर क्लिक करें।
+          {% else %}
+          If you recently integrated the Sewa Setu MCP, please <strong>refresh the connector</strong> on ChatGPT to apply the latest RTPS tools and status schemas.
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Claude -->
+  <div class="mcp-tab-panel" id="tab-panel-claude" role="tabpanel">
+    <div class="mcp-guide-card">
+      <div class="mcp-guide-title">
+        <span>Claude Desktop & Anthropic MCP Integration</span>
+        <span style="font-size:12px; font-weight:700; background:#f3e8ff; color:#7e22ce; padding:3px 10px; border-radius:999px;">
+          Native Anthropic Protocol
+        </span>
+      </div>
+      <div class="mcp-guide-req">
+        {% if current_lang == 'hi' %}आवश्यकता: Claude Desktop ऐप (macOS / Windows){% else %}Requires: Claude Desktop App (macOS / Windows){% endif %}
+      </div>
+
+      <ol class="mcp-steps-list">
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">1</div>
+          <div class="mcp-step-content">
+            Open Claude Desktop and click on <strong>Settings &rarr; Developer</strong>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">2</div>
+          <div class="mcp-step-content">
+            Click <strong>Edit Config</strong> to open <code>claude_desktop_config.json</code>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">3</div>
+          <div class="mcp-step-content">
+            Add the Sewa Setu MCP endpoint under <code>mcpServers</code>:
+            <div class="mcp-config-box" style="font-family:monospace; font-size:13px; line-height:1.6; background:#0f172a; color:#f8fafc; border:none;">
+              <div style="color:#94a3b8;">// claude_desktop_config.json</div>
+              <div>{</div>
+              <div style="padding-left:16px;">"mcpServers": {</div>
+              <div style="padding-left:32px; color:#38bdf8;">"sewasetu": {</div>
+              <div style="padding-left:48px;">"url": <span style="color:#a7f3d0;">"https://sewasetu-ai.onrender.com/mcp/citizen"</span></div>
+              <div style="padding-left:32px; color:#38bdf8;">}</div>
+              <div style="padding-left:16px;">}</div>
+              <div>}</div>
+            </div>
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">4</div>
+          <div class="mcp-step-content">
+            Restart Claude Desktop. The hammer 🔨 icon will show active Sewa Setu tools (<code>check_pension_eligibility</code>, <code>track_application_status</code>, <code>send_otp</code>, <code>submit_pension_application</code>).
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Tab 3: Officer MCP -->
+  <div class="mcp-tab-panel" id="tab-panel-officer" role="tabpanel">
+    <div class="mcp-guide-card">
+      <div class="mcp-guide-title">
+        <span>Departmental Officer MCP Endpoint</span>
+        <span style="font-size:12px; font-weight:700; background:#fef3c7; color:#b45309; padding:3px 10px; border-radius:999px;">
+          Administrative Access
+        </span>
+      </div>
+      <div class="mcp-guide-req">
+        {% if current_lang == 'hi' %}समाज कल्याण विभाग एवं ब्लॉक अधिकारियों के लिए आरक्षित{% else %}Reserved for Social Welfare Officers & Administrative AI Audits{% endif %}
+      </div>
+
+      <p style="font-size:14.5px; color:#475569; margin:0 0 16px;">
+        {% if current_lang == 'hi' %}
+        अधिकारी एमसीपी विभाग को बैकलॉग ऑडिट, 15-दिवसीय वैधानिक आरटीपीएस समय-सीमा अनुपालन तथा आवेदनों की त्वरित समीक्षा की अनुमति देता है।
+        {% else %}
+        The Officer MCP enables departmental agents to query pending queues, conduct RTPS SLA audits, and register administrative approval/rejection decisions.
+        {% endif %}
+      </p>
+
+      <div class="mcp-config-box">
+        <div class="mcp-config-field">
+          <span class="mcp-config-label">Officer MCP URL:</span>
+          <span class="mcp-url-badge" id="officer-mcp-url" style="background:#fef2f2; color:#991b1b; border-color:#fecaca;">
+            https://sewasetu-ai.onrender.com/mcp/officer
+          </span>
+          <button type="button" class="copy-btn" onclick="copyMcpUrl('officer-mcp-url', this)">📋 Copy</button>
+        </div>
+        <div class="mcp-config-field">
+          <span class="mcp-config-label">Tools Included:</span>
+          <span style="font-size:13px; color:#334155;"><code>list_pending_applications</code>, <code>review_application</code>, <code>get_rtps_sla_report</code></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================
+     "Try Asking" Interactive Pill Cloud
+     ======================================================== -->
+<section class="try-asking-section">
+  <h3 class="try-asking-title">
+    {% if current_lang == 'hi' %}पूछ कर देखें (Try Asking){% else %}Try Asking{% endif %}
+  </h3>
+  <p class="try-asking-sub">
+    {% if current_lang == 'hi' %}
+    किसी भी प्रश्न पर क्लिक करके तुरंत सेवा सेतु एआई सहायक से लाइव संवाद करें:
+    {% else %}
+    Click any prompt below to test live with Sewa Setu AI assistant or connect via your MCP client:
+    {% endif %}
+  </p>
+
+  <div class="try-asking-cloud">
+    <button type="button" class="ask-pill pill-mint" onclick="triggerPillAsk('Am I eligible for old age pension in Sonari block?')">
+      <span>🌾</span>
+      <span>{% if current_lang == 'hi' %}क्या मैं सोनारी ब्लॉक में पेंशन का पात्र हूँ?{% else %}Am I eligible for old age pension in Sonari block?{% endif %}</span>
+    </button>
+    
+    <button type="button" class="ask-pill pill-blue" onclick="triggerPillAsk('Check status of application SSP26424425')">
+      <span>🔍</span>
+      <span>{% if current_lang == 'hi' %}आवेदन संख्या SSP26424425 की स्थिति जांचें{% else %}Check status of application SSP26424425{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-purple" onclick="triggerPillAsk('What is the 15-day deemed approval rule?')">
+      <span>⚖️</span>
+      <span>{% if current_lang == 'hi' %}15-दिवसीय स्वतः स्वीकृति (Deemed Approval) नियम क्या है?{% else %}What is the 15-day deemed approval rule?{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-amber" onclick="triggerPillAsk('What documents are accepted for age proof?')">
+      <span>📁</span>
+      <span>{% if current_lang == 'hi' %}आयु प्रमाण के लिए कौन से दस्तावेज मान्य हैं?{% else %}What documents are accepted for age proof?{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-rose" onclick="triggerPillAsk('I want to apply for pension with mobile 9876500003')">
+      <span>📱</span>
+      <span>{% if current_lang == 'hi' %}मोबाइल 9876500003 से पेंशन आवेदन शुरू करें{% else %}Apply for pension with mobile 9876500003{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-slate" onclick="triggerPillAsk('Can someone under 60 years apply for pension?')">
+      <span>👵</span>
+      <span>{% if current_lang == 'hi' %}क्या 60 वर्ष से कम आयु का व्यक्ति आवेदन कर सकता है?{% else %}Can someone under 60 years apply for pension?{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-mint" onclick="triggerPillAsk('What is the monthly DBT pension amount?')">
+      <span>💰</span>
+      <span>{% if current_lang == 'hi' %}मासिक डीबीटी पेंशन राशि कितनी है?{% else %}What is the monthly DBT pension amount?{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-blue" onclick="triggerPillAsk('Which blocks are covered under Purvanchal RTPS?')">
+      <span>📍</span>
+      <span>{% if current_lang == 'hi' %}पूर्वांचल आरटीपीएस के अंतर्गत कौन से ब्लॉक आते हैं?{% else %}Which blocks are covered under Purvanchal RTPS?{% endif %}</span>
+    </button>
+
+    <button type="button" class="ask-pill pill-purple" onclick="triggerPillAsk('What if my application is still pending after 15 days?')">
+      <span>⏳</span>
+      <span>{% if current_lang == 'hi' %}यदि 15 दिनों बाद भी आवेदन लंबित रहे तो क्या होगा?{% else %}What if my application is still pending after 15 days?{% endif %}</span>
+    </button>
+  </div>
+</section>
+
 <div class="kiosk-notice-banner">
   <strong>🛡️ {% if current_lang == 'hi' %}सार्वजनिक कियोस्क व फोन उपयोगकर्ताओं के लिए सूचना:{% else %}Notice for Public Kiosk & Shared Terminal Users:{% endif %}</strong>
   {% if current_lang == 'hi' %}
@@ -449,5 +1084,69 @@
       resBox.innerHTML = msg;
     }
   });
+
+  // MCP Tabs Switcher
+  function switchMcpTab(tabId) {
+    var tabs = ['chatgpt', 'claude', 'officer'];
+    tabs.forEach(function(t) {
+      var btn = document.getElementById('tab-btn-' + t);
+      var panel = document.getElementById('tab-panel-' + t);
+      if (btn) {
+        if (t === tabId) {
+          btn.classList.add('active');
+          btn.setAttribute('aria-selected', 'true');
+        } else {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        }
+      }
+      if (panel) {
+        if (t === tabId) {
+          panel.classList.add('active');
+        } else {
+          panel.classList.remove('active');
+        }
+      }
+    });
+  }
+
+  // Copy MCP URL to Clipboard with Feedback
+  function copyMcpUrl(elemId, btn) {
+    var elem = document.getElementById(elemId);
+    if (!elem) return;
+    var text = elem.innerText || elem.textContent;
+    navigator.clipboard.writeText(text.trim()).then(function() {
+      var oldText = btn.innerHTML;
+      btn.innerHTML = '✓ Copied!';
+      btn.style.background = '#10b981';
+      btn.style.color = '#ffffff';
+      btn.style.borderColor = '#10b981';
+      setTimeout(function() {
+        btn.innerHTML = oldText;
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 2000);
+    }).catch(function() {
+      // Fallback for older browsers
+      var ta = document.createElement('textarea');
+      ta.value = text.trim();
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.innerHTML = '✓ Copied!';
+      setTimeout(function() { btn.innerHTML = '📋 Copy'; }, 2000);
+    });
+  }
+
+  // "Try Asking" Pill Click Handler: opens floating assistant with prompt
+  function triggerPillAsk(queryText) {
+    if (typeof openLiveChat === 'function') {
+      openLiveChat('general', queryText);
+    } else {
+      window.location.href = '/assistant?q=' + encodeURIComponent(queryText);
+    }
+  }
 </script>
 {% endblock %}

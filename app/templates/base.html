@@ -498,6 +498,25 @@
     color: #94a3b8;
   }
   /* LG-Style Floating AI Assistant Chatbot Styles */
+  @keyframes botFloatGently {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes botPulseRing {
+    0% {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22), 0 0 0 0 rgba(247, 147, 30, 0.55);
+    }
+    70% {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28), 0 0 0 14px rgba(247, 147, 30, 0);
+    }
+    100% {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.22), 0 0 0 0 rgba(247, 147, 30, 0);
+    }
+  }
   .chatbot-fab-btn {
     position: fixed;
     bottom: 24px;
@@ -515,10 +534,12 @@
     justify-content: center;
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
     overflow: hidden;
+    animation: botFloatGently 3.2s ease-in-out infinite, botPulseRing 3.2s infinite;
   }
   .chatbot-fab-btn:hover {
-    transform: scale(1.08);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.32);
+    animation-play-state: paused;
+    transform: scale(1.12);
+    box-shadow: 0 10px 30px rgba(247, 147, 30, 0.4), 0 0 0 4px rgba(247, 147, 30, 0.2);
   }
   .chatbot-fab-img {
     width: 100%;
@@ -890,6 +911,7 @@
         <a href="/" class="nav-link">{{ t('home') }}</a>
         <a href="/apply" class="nav-link">{{ t('apply_pension') }}</a>
         <a href="/status" class="nav-link">{{ t('check_status') }}</a>
+        <a href="/#mcp-integration" class="nav-link" style="color:#38bdf8;" title="Model Context Protocol Server">⚡ MCP Server</a>
         <a href="/assistant" class="nav-link nav-link-ai">🤖 {% if current_lang == 'hi' %}एआई सहायक{% else %}AI Assistant{% endif %}</a>
       </nav>
 
@@ -929,6 +951,10 @@
       </a>
       <a href="/status" class="mobile-nav-link" onclick="toggleMobileMenu()">
         <span>🔍 {{ t('check_status') }}</span>
+        <span>&rsaquo;</span>
+      </a>
+      <a href="/#mcp-integration" class="mobile-nav-link" onclick="toggleMobileMenu()">
+        <span>⚡ MCP Server (ChatGPT & Claude)</span>
         <span>&rsaquo;</span>
       </a>
       <a href="/assistant" class="mobile-nav-link" onclick="toggleMobileMenu()">
@@ -1110,15 +1136,29 @@
     }
   }
 
-  function openLiveChat(intent) {
+  function openLiveChat(intent, query) {
+    var modal = document.getElementById('sewasetu-chatbot-modal');
+    var openFab = document.getElementById('sewasetu-chatbot-fab');
+    var closeFab = document.getElementById('sewasetu-chatbot-close');
+    if (modal && !isChatbotOpen) {
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden', 'false');
+      if (openFab) openFab.style.display = 'none';
+      if (closeFab) closeFab.style.display = 'flex';
+      isChatbotOpen = true;
+    }
     var menuView = document.getElementById('lg-menu-view');
     var chatView = document.getElementById('lg-chat-view');
     var iframe = document.getElementById('lg-assistant-iframe');
-    if (!iframe.src || iframe.src === 'about:blank' || iframe.src.indexOf('/assistant') === -1) {
-      iframe.src = '/assistant?embed=1&intent=' + encodeURIComponent(intent || 'general');
+    var targetUrl = '/assistant?embed=1&intent=' + encodeURIComponent(intent || 'general');
+    if (query) {
+      targetUrl += '&q=' + encodeURIComponent(query);
     }
-    menuView.style.display = 'none';
-    chatView.style.display = 'flex';
+    if (!iframe.src || iframe.src === 'about:blank' || iframe.src.indexOf('/assistant') === -1 || query) {
+      iframe.src = targetUrl;
+    }
+    if (menuView) menuView.style.display = 'none';
+    if (chatView) chatView.style.display = 'flex';
   }
 
   function showMenuView() {
