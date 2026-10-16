@@ -789,13 +789,10 @@
           </div>
           <span style="font-size:11.5px; color:#94a3b8; font-family:monospace;">36s • 1080p HD</span>
         </div>
-        <video controls style="width:100%; height:auto; display:block; max-height:480px; background:#000;" preload="metadata" poster="/static/favicon.ico">
+        <video class="mcp-walkthrough-video" controls autoplay muted loop playsinline style="width:100%; height:auto; display:block; max-height:480px; background:#000;" preload="metadata" poster="/static/favicon.ico">
           <source src="/static/videos/chatgpt_mcp_demo.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
-        <div style="padding:8px 14px; background:#0f172a; font-size:12.5px; color:#94a3b8; text-align:center;">
-          🎬 Recorded demonstration showing ChatGPT Developer Settings, adding Sewa Setu Citizen MCP, and live tool testing.
-        </div>
       </div>
 
       <ol class="mcp-steps-list">
@@ -919,13 +916,10 @@
           </div>
           <span style="font-size:11.5px; color:#94a3b8; font-family:monospace;">35s • 1080p HD</span>
         </div>
-        <video controls style="width:100%; height:auto; display:block; max-height:480px; background:#000;" preload="metadata" poster="/static/favicon.ico">
+        <video class="mcp-walkthrough-video" controls autoplay muted loop playsinline style="width:100%; height:auto; display:block; max-height:480px; background:#000;" preload="metadata" poster="/static/favicon.ico">
           <source src="/static/videos/claude_mcp_demo.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
-        <div style="padding:8px 14px; background:#0f172a; font-size:12.5px; color:#94a3b8; text-align:center;">
-          🎬 Recorded demonstration showing custom connector setup, selecting <em>"No sign-in"</em>, and live tool interaction.
-        </div>
       </div>
 
       <ol class="mcp-steps-list">
@@ -1187,12 +1181,65 @@
       if (panel) {
         if (t === tabId) {
           panel.classList.add('active');
+          var activeVideo = panel.querySelector('video.mcp-walkthrough-video');
+          if (activeVideo && isElementInViewport(activeVideo)) {
+            activeVideo.play().catch(function(){});
+          }
         } else {
           panel.classList.remove('active');
+          var inactiveVideo = panel.querySelector('video.mcp-walkthrough-video');
+          if (inactiveVideo) {
+            inactiveVideo.pause();
+          }
         }
       }
     });
   }
+
+  function isElementInViewport(el) {
+    var rect = el.getBoundingClientRect();
+    return (
+      rect.top < (window.innerHeight || document.documentElement.clientHeight) &&
+      rect.bottom > 0
+    );
+  }
+
+  // Auto-play videos on scroll into view, pause when scrolled away
+  document.addEventListener('DOMContentLoaded', function() {
+    var videos = document.querySelectorAll('video.mcp-walkthrough-video');
+    if ('IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          var video = entry.target;
+          // Check if parent panel is currently active/visible
+          var panel = video.closest('.mcp-tab-panel');
+          var isPanelActive = !panel || panel.classList.contains('active');
+          if (entry.isIntersecting && isPanelActive) {
+            video.play().catch(function(){});
+          } else {
+            video.pause();
+          }
+        });
+      }, { threshold: 0.35 });
+      videos.forEach(function(video) {
+        observer.observe(video);
+      });
+    } else {
+      // Fallback scroll listener
+      var scrollHandler = function() {
+        videos.forEach(function(video) {
+          var panel = video.closest('.mcp-tab-panel');
+          var isPanelActive = !panel || panel.classList.contains('active');
+          if (isElementInViewport(video) && isPanelActive) {
+            video.play().catch(function(){});
+          } else {
+            video.pause();
+          }
+        });
+      };
+      window.addEventListener('scroll', scrollHandler, { passive: true });
+    }
+  });
 
   // Copy MCP URL to Clipboard with Feedback
   function copyMcpUrl(elemId, btn) {
