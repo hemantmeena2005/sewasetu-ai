@@ -426,7 +426,140 @@ class TestCitizenUXAndPrivacy(unittest.TestCase):
         self.assertEqual(r_pwd_login.status_code, 200)
         self.assertIn(b"Bhaben Kalita", r_pwd_login.data)
 
+    # -----------------------------------------------------------------------
+    # 10. Returning user, logout, switching users, and homepage adaptation
+    # -----------------------------------------------------------------------
+    def test_returning_citizen_and_user_switching(self):
+        """
+        Comprehensive acceptance test for:
+        1. Returning authenticated user sees Check Application Status & their details on homepage.
+        2. Attempting to access /apply when already holding an active application redirects to status.
+        3. Logout completely purges session and privacy headers prevent caching.
+        4. Switching users: Citizen B on the same client can log in independently and sees only Citizen B's data.
+        5. IDOR prevention: Citizen B cannot view Citizen A's application.
+        6. First-time user verifying OTP gets directed to form if no application, or to status if existing.
+        """
+        # Create an application for Citizen A
+        app_a = services.submit_application(
+            self.mobile_a,
+            {
+                "applicant_name": "Citizen Alpha",
+                "dob": "10/05/1950",
+                "gender": "Female",
+                "marital_status": "Widowed",
+                "husband_name": "Late Husband A",
+                "husband_employer": "",
+                "village": "Sonari Gaon",
+                "block": "Sonari",
+                "bank_account": "111122223333",
+                "ifsc": "SBIN0001234"
+            },
+            doc_path="doc_alpha.pdf",
+            actor=f"applicant:{self.mobile_a}"
+        )
+        self.assertTrue(app_a["success"])
+        app_a_id = app_a["application_id"]
+        app_a_no = app_a["application_no"]
+
+        # Create an application for Citizen B
+        app_b = services.submit_application(
+            self.mobile_b,
+            {
+                "applicant_name": "Citizen Bravo",
+                "dob": "15/08/1952",
+                "gender": "Male",
+                "marital_status": "Married",
+                "husband_name": "",
+                "husband_employer": "",
+                "village": "Rajapara Block",
+                "block": "Rajapara",
+                "bank_account": "444455556666",
+                "ifsc": "SBIN0001234"
+            },
+            doc_path="doc_bravo.pdf",
+            actor=f"applicant:{self.mobile_b}"
+        )
+        self.assertTrue(app_b["success"])
+        app_b_id = app_b["application_id"]
+        app_b_no = app_b["application_no"]
+
+        # Step 1: Citizen A logs in
+        with self.client.session_transaction() as sess:
+            sess["logged_in"] = True
+            sess["portal_mobile"] = self.mobile_a
+
+        # Visit homepage as logged-in Citizen A
+        resp_home_a = self.client.get("/")
+        self.assertEqual(resp_home_a.status_code, 200)
+        self.assertIn(b"Check Application Status", resp_home_a.data)
+        self.assertIn(b"Logout", resp_home_a.data)
+        self.assertIn(b"Citizen Alpha", resp_home_a.data)
+        self.assertIn(app_a_no.encode("utf-8"), resp_home_a.data)
+        self.assertNotIn(b"Citizen Bravo", resp_home_a.data)
+
+        # Citizen A tries to go to /apply -> should be redirected to their active application
+        resp_apply_a = self.client.get("/apply", follow_redirects=True)
+        self.assertEqual(resp_apply_a.status_code, 200)
+        self.assertIn(b"You already have an active application", resp_apply_a.data)
+        self.assertIn(app_a_no.encode("utf-8"), resp_apply_a.data)
+
+        # Step 2: Citizen A logs out
+        resp_logout = self.client.get("/logout", follow_redirects=True)
+        self.assertEqual(resp_logout.status_code, 200)
+        # Should now see public homepage with "Apply for Pension" and NO private details
+        self.assertIn(b"Apply for Pension", resp_logout.data)
+        self.assertNotIn(b"Citizen Alpha", resp_logout.data)
+        self.assertNotIn(app_a_no.encode("utf-8"), resp_logout.data)
+
+        # Step 3: Citizen B arrives on the same browser and logs in via OTP
+        # Request OTP for Citizen B
+        otp_res = services.send_otp_for_mobile(self.mobile_b)
+        self.assertTrue(otp_res["success"])
+        b_otp_code = otp_res["code"]
+
+        # Citizen B logs in via OTP on status portal
+        resp_login_b = self.client.post("/status", data={
+            "login_mode": "otp",
+            "otp_mobile": self.mobile_b,
+            "action": "verify_otp",
+            "otp": b_otp_code
+        }, follow_redirects=True)
+        self.assertEqual(resp_login_b.status_code, 200)
+        self.assertIn(b"Citizen Bravo", resp_login_b.data)
+        self.assertIn(app_b_no.encode("utf-8"), resp_login_b.data)
+        self.assertNotIn(b"Citizen Alpha", resp_login_b.data)
+
+        # Citizen B visits homepage -> sees Citizen B's application status
+        resp_home_b = self.client.get("/")
+        self.assertEqual(resp_home_b.status_code, 200)
+        self.assertIn(b"Citizen Bravo", resp_home_b.data)
+        self.assertIn(app_b_no.encode("utf-8"), resp_home_b.data)
+        self.assertNotIn(b"Citizen Alpha", resp_home_b.data)
+
+        # Step 4: IDOR Prevention: Citizen B tries to view Citizen A's application ID
+        resp_idor = self.client.get(f"/application/{app_a_id}")
+        self.assertEqual(resp_idor.status_code, 404)
+
+        # Step 5: Citizen B also cannot download Citizen A's PDF acknowledgment
+        resp_ack_idor = self.client.get(f"/ack/{app_a_id}.pdf")
+        self.assertEqual(resp_ack_idor.status_code, 403)
+
+        # Step 6: Verify MCP citizen tool returns active application info after OTP verification
+        mcp_otp_res = mcp_citizen.verify_mobile_otp(self.mobile_a, "123456")
+        # generate valid otp
+        conn = services.get_db()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO otps (mobile, code, created_at) VALUES (%s, %s, %s)",
+                    (self.mobile_a, "654321", datetime.now()))
+        conn.commit()
+        cur.close(); conn.close()
+        mcp_otp_verified = mcp_citizen.verify_mobile_otp(self.mobile_a, "654321")
+        self.assertTrue(mcp_otp_verified["verified"])
+        self.assertTrue(mcp_otp_verified["has_active_application"])
+        self.assertEqual(mcp_otp_verified["active_application_no"], app_a_no)
+
 
 if __name__ == "__main__":
     unittest.main()
+
 

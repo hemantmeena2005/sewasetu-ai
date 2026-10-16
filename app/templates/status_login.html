@@ -86,6 +86,7 @@
       </div>
 
       {% if otp_sent %}
+      <div style="margin-bottom:18px;">
         <label for="status_otp_code">Enter 6-Digit OTP <span style="color:var(--danger)">*</span></label>
         <input type="text" id="status_otp_code" name="otp" maxlength="6" inputmode="numeric" placeholder="123456" required autocomplete="one-time-code" style="max-width:220px; font-size:22px; font-weight:700; letter-spacing:4px; text-align:center;">
         <p class="note" style="margin-top:8px;">A 6-digit code was sent to mobile number {{ mobile }}. Valid for 5 minutes.</p>

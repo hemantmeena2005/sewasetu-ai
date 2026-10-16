@@ -597,17 +597,71 @@
   </div>
   {% endif %}
 
+  {% if citizen_app %}
+  <!-- Active Citizen Application Status Banner -->
+  <div style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #86efac; border-radius: 12px; padding: 20px 24px; margin: 20px 0; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.08);">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:24px;">📋</span>
+        <div>
+          <span style="font-size:12px; text-transform:uppercase; letter-spacing:0.5px; font-weight:700; color:#047857;">
+            {% if current_lang == 'hi' %}सक्रिय आवेदन रिकॉर्ड{% else %}Active Application Found{% endif %}
+          </span>
+          <h3 style="margin:2px 0 0; font-size:19px; color:#064e3b;">
+            {{ citizen_app.applicant_name }}
+          </h3>
+        </div>
+      </div>
+      <div>
+        <span class="status-badge status-{{ citizen_app.status|lower }}" style="font-size:14px; padding:6px 14px; font-weight:700; border-radius:20px; display:inline-block; border:1px solid currentColor;">
+          {{ citizen_app.status }}
+        </span>
+      </div>
+    </div>
+    
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; font-size:14.5px; color:#1e293b; margin-bottom:16px; background:rgba(255,255,255,0.7); padding:12px 16px; border-radius:8px;">
+      <div><strong>{% if current_lang == 'hi' %}आवेदन संख्या{% else %}Application No{% endif %}:</strong> <code style="font-weight:700; color:#0f172a; font-size:15px;">{{ citizen_app.application_no }}</code></div>
+      <div><strong>{% if current_lang == 'hi' %}पंजीकृत मोबाइल{% else %}Mobile{% endif %}:</strong> {{ citizen_app.mobile }}</div>
+      <div><strong>{% if current_lang == 'hi' %}ब्लॉक / ग्राम{% else %}Block / Village{% endif %}:</strong> {{ citizen_app.block }} ({{ citizen_app.village }})</div>
+      <div><strong>{% if current_lang == 'hi' %}जमा करने की तिथि{% else %}Submitted{% endif %}:</strong> {{ citizen_app.submitted_at.strftime('%d/%m/%Y') if citizen_app.submitted_at else 'Active' }}</div>
+    </div>
+
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <a href="/application/{{ citizen_app.id }}" class="btn" role="button" id="btn-check-status-hero" style="background:#047857; border-color:#047857;">
+        🔍 {{ t('check_status') }} &rarr;
+      </a>
+      <a href="/logout" class="btn btn-secondary" role="button" id="btn-logout-hero">
+        🚪 {% if current_lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+      </a>
+    </div>
+  </div>
+  {% else %}
   <div class="hero-actions">
-    <a href="/apply" class="btn" role="button" aria-label="{{ t('apply_pension') }}">
+    {% if session.get('logged_in') and session.get('portal_mobile') %}
+    <!-- Logged in but no active application (e.g. previous was withdrawn or rejected) -->
+    <a href="/apply" class="btn" role="button" aria-label="{{ t('apply_pension') }}" id="btn-apply-hero">
       📝 {{ t('apply_pension') }} &rarr;
     </a>
-    <a href="/status" class="btn btn-secondary" role="button" aria-label="{{ t('check_status') }}">
+    <a href="/logout" class="btn btn-secondary" role="button" id="btn-logout-hero">
+      🚪 {% if current_lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+    </a>
+    <a href="/assistant" class="btn btn-ai" role="button" aria-label="{{ t('ai_assistant_title') }}">
+      🤖 {{ t('open_assistant_btn') }}
+    </a>
+    {% else %}
+    <!-- Logged out / public visitor -->
+    <a href="/apply" class="btn" role="button" aria-label="{{ t('apply_pension') }}" id="btn-apply-hero">
+      📝 {{ t('apply_pension') }} &rarr;
+    </a>
+    <a href="/status" class="btn btn-secondary" role="button" aria-label="{{ t('check_status') }}" id="btn-check-status-hero">
       🔍 {{ t('check_status') }}
     </a>
     <a href="/assistant" class="btn btn-ai" role="button" aria-label="{{ t('ai_assistant_title') }}">
       🤖 {{ t('open_assistant_btn') }}
     </a>
+    {% endif %}
   </div>
+  {% endif %}
 </div>
 
 <!-- AI Assistant Spotlight Card -->

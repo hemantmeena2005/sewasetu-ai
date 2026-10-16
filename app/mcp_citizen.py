@@ -264,18 +264,43 @@ def verify_mobile_otp(mobile: str, otp: str) -> Dict[str, Any]:
 
     # Mint verified citizen session token
     token = create_citizen_session_token(clean_mobile)
-    return {
+
+    # Check if applicant has an existing active application
+    conn_check = services.get_db()
+    cur_check = conn_check.cursor()
+    existing = services.get_active_application(cur_check, clean_mobile)
+    cur_check.close()
+    conn_check.close()
+
+    resp = {
         "verified": True,
         "session_token": token,
         "mobile": clean_mobile,
         "expires_in_seconds": SESSION_TTL_SECONDS,
-        "message": "Mobile number verified successfully. Use this session_token for subsequent tool calls.",
-        "next_steps": [
+        "has_active_application": bool(existing),
+    }
+
+    if existing:
+        resp["active_application_no"] = existing[1]
+        resp["active_status"] = existing[2]
+        resp["message"] = (
+            f"Mobile number verified. An active application {existing[1]} ({existing[2]}) was found. "
+            "Please check application status using get_application_status instead of creating a duplicate."
+        )
+        resp["next_steps"] = [
+            "Use get_application_status with this session_token to check the current progress and officer notes.",
+            "If changes are required, a pending application can be withdrawn before filing a new one."
+        ]
+    else:
+        resp["active_application_no"] = None
+        resp["active_status"] = None
+        resp["message"] = "Mobile number verified successfully. Use this session_token for subsequent tool calls."
+        resp["next_steps"] = [
             "Use validate_application to check applicant details.",
             "Use upload_age_proof to upload the age verification document.",
             "Use submit_application with declaration_confirmed=True to finalize submission."
         ]
-    }
+    return resp
 
 
 # ---------------------------------------------------------------------------

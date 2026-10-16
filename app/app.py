@@ -65,7 +65,7 @@ def inject_i18n():
 @app.after_request
 def set_privacy_headers(response):
     # Prevent browser caching of sensitive citizen data on shared kiosks
-    if request.path.startswith(("/apply", "/verify", "/form", "/upload", "/declaration", "/status", "/application", "/ack")):
+    if request.path == "/" or request.path.startswith(("/apply", "/verify", "/form", "/upload", "/declaration", "/status", "/application", "/ack", "/officer", "/admin")):
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -80,7 +80,11 @@ def logout():
     session.clear()
     session["lang"] = lang
     flash(i18n.get_translation("session_cleared_msg", lang), "success")
-    return redirect(url_for("index"))
+    resp = redirect(url_for("index"))
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0, private"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 @app.route("/favicon.ico")
@@ -231,7 +235,34 @@ def create_application(cur, mobile, cleaned):
 
 @app.route("/")
 def index():
-    return render_template("index.html", hours_left=deadline_remaining())
+    citizen_app = None
+    portal_mobile = session.get("portal_mobile")
+    if session.get("logged_in") and portal_mobile:
+        conn = get_db()
+        cur = conn.cursor()
+        app_tuple = active_application(cur, portal_mobile)
+        if app_tuple:
+            cur.execute(
+                "SELECT id, application_no, applicant_name, mobile, dob, village, block, "
+                "status, submitted_at FROM applications WHERE id = %s",
+                (app_tuple[0],)
+            )
+            r = cur.fetchone()
+            if r:
+                citizen_app = {
+                    "id": r[0],
+                    "application_no": r[1],
+                    "applicant_name": r[2],
+                    "mobile": r[3],
+                    "dob": r[4].strftime("%d/%m/%Y") if r[4] else None,
+                    "village": r[5],
+                    "block": r[6],
+                    "status": r[7],
+                    "submitted_at": r[8]
+                }
+        cur.close()
+        conn.close()
+    return render_template("index.html", hours_left=deadline_remaining(), citizen_app=citizen_app)
 
 
 @app.route("/about")
@@ -298,6 +329,18 @@ def apply():
     if deadline_remaining() is None:
         flash("The application window for this scheme has closed.")
         return redirect(url_for("index"))
+
+    # If already authenticated, check if an active application exists
+    if session.get("logged_in") and session.get("portal_mobile"):
+        mobile = session["portal_mobile"]
+        conn = get_db()
+        cur = conn.cursor()
+        existing = active_application(cur, mobile)
+        cur.close(); conn.close()
+        if existing:
+            flash("You already have an active application (%s - %s). You cannot submit another application." % (existing[1], existing[2]))
+            return redirect(url_for("view_application", app_id=existing[0]))
+
     if request.method == "POST":
         mobile = request.form.get("mobile", "").strip()
         captcha = request.form.get("captcha", "")
@@ -311,9 +354,17 @@ def apply():
         if len(mobile) != 10 or not mobile.isdigit():
             flash("Please enter a valid 10-digit mobile number.")
             return render_template("apply.html", captcha_q=make_captcha())
-        code = str(random.randint(100000, 999999))
+
+        # Check if mobile already holds an active application
         conn = get_db()
         cur = conn.cursor()
+        existing = active_application(cur, mobile)
+        if existing:
+            cur.close(); conn.close()
+            flash("An active application (%s - %s) already exists for mobile %s. Please check application status." % (existing[1], existing[2], mobile))
+            return redirect(url_for("status_login", mobile=mobile, mode="otp"))
+
+        code = str(random.randint(100000, 999999))
         cur.execute("INSERT INTO otps (mobile, code, created_at) VALUES (%s, %s, %s)",
                     (mobile, code, datetime.now()))
         conn.commit()
@@ -344,15 +395,29 @@ def verify():
         cur.execute("SELECT code, created_at FROM otps WHERE mobile = %s "
                     "ORDER BY id DESC LIMIT 1", (mobile,))
         row = cur.fetchone()
-        cur.close(); conn.close()
         if row and row[0] == code:
             age = (datetime.now() - row[1]).total_seconds()
             if age > OTP_VALIDITY_SECONDS:
+                cur.close(); conn.close()
                 app.logger.warning("otp expired mobile=%s age=%ds" % (mobile, int(age)))
                 flash("OTP expired. Please request a new OTP.")
                 return redirect(url_for("apply"))
+
+            # Authenticate the citizen session upon successful OTP verification
+            session["logged_in"] = True
+            session["portal_mobile"] = mobile
             session["verified_mobile"] = mobile
+
+            # Check if applicant already has an active application
+            existing = active_application(cur, mobile)
+            cur.close(); conn.close()
+
+            if existing:
+                flash("Welcome back. An active application (%s - %s) was found for your mobile number." % (existing[1], existing[2]))
+                return redirect(url_for("view_application", app_id=existing[0]))
+
             return redirect(url_for("form_step", step=1))
+        cur.close(); conn.close()
         flash("Invalid OTP.")
     return render_template("verify.html", mobile=mobile)
 

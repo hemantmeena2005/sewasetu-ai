@@ -922,9 +922,20 @@
       </div>
 
       {% if session.get('logged_in') or session.get('verified_mobile') or session.get('apply_mobile') or session.get('admin') %}
-      <a href="/logout" class="btn-header-logout" role="button" title="Logout">
-        🚪 {% if current_lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
-      </a>
+      <div style="display:flex; align-items:center; gap:8px;">
+        {% if session.get('portal_mobile') %}
+        <span style="background:rgba(255,255,255,0.15); color:#ffffff; font-size:12px; font-weight:700; padding:4px 10px; border-radius:12px; border:1px solid rgba(255,255,255,0.25);" title="Authenticated Citizen">
+          👤 {{ session.get('portal_mobile') }}
+        </span>
+        {% elif session.get('admin_user') %}
+        <span style="background:rgba(247,147,30,0.2); color:#ffedd5; font-size:12px; font-weight:700; padding:4px 10px; border-radius:12px; border:1px solid #f7931e;" title="Officer Session">
+          🏛️ {{ session.get('admin_user') }}
+        </span>
+        {% endif %}
+        <a href="/logout" class="btn-header-logout" role="button" title="Logout">
+          🚪 {% if current_lang == 'hi' %}लॉग आउट{% else %}Logout{% endif %}
+        </a>
+      </div>
       {% else %}
       <a href="/status" class="btn-header-login" role="button" title="Login">
         🔑 {% if current_lang == 'hi' %}लॉगिन{% else %}Login{% endif %}

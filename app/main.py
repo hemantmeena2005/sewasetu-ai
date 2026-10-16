@@ -32,6 +32,7 @@ async def app_lifespan(app):
 
 
 from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from starlette.routing import Route
 
