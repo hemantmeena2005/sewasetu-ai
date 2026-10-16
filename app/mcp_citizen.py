@@ -579,7 +579,11 @@ def create_citizen_mcp_app():
     Disables DNS rebinding protection on localhost/internal proxies and enables
     stateless HTTP so requests can be processed across multiple gunicorn workers.
     """
-    sec = TransportSecuritySettings(enable_dns_rebinding_protection=False)
+    sec = TransportSecuritySettings(
+        enable_dns_rebinding_protection=False,
+        allowed_hosts=["*"],
+        allowed_origins=["*"]
+    )
     return citizen_mcp.streamable_http_app(
         streamable_http_path="/",
         transport_security=sec,

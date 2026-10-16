@@ -138,19 +138,30 @@ def verify_token(token, audience):
         return None
 
 
+def get_issuer_url():
+    """Get authoritative issuer URL, prioritizing request Host header when running behind Render/reverse proxy."""
+    if request:
+        proto = request.headers.get("X-Forwarded-Proto") or request.scheme or "http"
+        host = request.headers.get("X-Forwarded-Host") or request.headers.get("Host")
+        if host:
+            return f"{proto}://{host}".rstrip("/")
+    return os.environ.get("PUBLIC_BASE_URL", "http://localhost:8000").rstrip("/")
+
+
 # ---------------------------------------------------------------------------
 # discovery
 # ---------------------------------------------------------------------------
 
 @oauth.get("/.well-known/oauth-authorization-server")
 def as_metadata():
+    base = get_issuer_url()
     return jsonify({
-        "issuer": ISSUER,
-        "authorization_endpoint": ISSUER + "/oauth/authorize",
-        "token_endpoint": ISSUER + "/oauth/token",
-        "registration_endpoint": ISSUER + "/oauth/register",
-        "jwks_uri": ISSUER + "/.well-known/jwks.json",
-        "revocation_endpoint": ISSUER + "/oauth/revoke",
+        "issuer": base,
+        "authorization_endpoint": base + "/oauth/authorize",
+        "token_endpoint": base + "/oauth/token",
+        "registration_endpoint": base + "/oauth/register",
+        "jwks_uri": base + "/.well-known/jwks.json",
+        "revocation_endpoint": base + "/oauth/revoke",
         "scopes_supported": list(SCOPES),
         "response_types_supported": ["code"],
         "response_modes_supported": ["query"],
@@ -159,7 +170,22 @@ def as_metadata():
         "token_endpoint_auth_methods_supported": ["none", "client_secret_post"],
         "authorization_response_iss_parameter_supported": True,
         "client_id_metadata_document_supported": True,
-        "service_documentation": ISSUER + "/about",
+        "service_documentation": base + "/about",
+    })
+
+
+@oauth.get("/.well-known/oauth-protected-resource")
+@oauth.get("/mcp/citizen/.well-known/oauth-protected-resource")
+@oauth.get("/mcp/officer/.well-known/oauth-protected-resource")
+def protected_resource_metadata():
+    """RFC 9728 OAuth 2.0 Protected Resource Metadata for Claude and MCP clients."""
+    base = get_issuer_url()
+    return jsonify({
+        "resource": base + "/mcp/citizen",
+        "authorization_servers": [base],
+        "scopes_supported": ["citizen", "officer"],
+        "bearer_methods_supported": ["header"],
+        "resource_documentation": base + "/about"
     })
 
 

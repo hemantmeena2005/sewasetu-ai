@@ -31,6 +31,8 @@ async def app_lifespan(app):
             yield
 
 
+from starlette.middleware.cors import CORSMiddleware
+
 # Unified Starlette Application
 application = Starlette(
     routes=[
@@ -39,6 +41,15 @@ application = Starlette(
         Mount("/", WSGIMiddleware(portal.app)),
     ],
     lifespan=app_lifespan
+)
+
+application.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 app = application
