@@ -1631,6 +1631,7 @@ def api_openapi_json():
                 "post": {
                     "summary": "Send Mobile OTP",
                     "operationId": "sendMobileOtp",
+                    "x-openai-isConsequential": False,
                     "description": "Requests a 6-digit OTP to applicant mobile number.",
                     "requestBody": {
                         "required": True,
@@ -1643,10 +1644,11 @@ def api_openapi_json():
                 "post": {
                     "summary": "Verify Mobile OTP",
                     "operationId": "verifyMobileOtp",
+                    "x-openai-isConsequential": False,
                     "description": "Verifies 6-digit OTP code and returns session token.",
                     "requestBody": {
                         "required": True,
-                        "content": {"application/json": {"schema": {"type": "object", "properties": {"mobile": {"type": "string"}, "otp": {"type": "string"}}, "required": ["mobile", "otp"]}}}
+                        "content": {"application/json": {"schema": {"type": "object", "properties": {"mobile": {"type": "string"}, "otp": {"type": "string"}}, "required": ["otp"]}}}
                     },
                     "responses": {"200": {"description": "Verification result and session token"}}
                 }
@@ -1655,6 +1657,7 @@ def api_openapi_json():
                 "post": {
                     "summary": "Validate Application Details",
                     "operationId": "validateApplication",
+                    "x-openai-isConsequential": False,
                     "description": "Validates applicant age, IFSC, bank account, and block eligibility.",
                     "requestBody": {
                         "required": True,

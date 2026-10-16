@@ -231,13 +231,26 @@ def verify_mobile_otp(mobile: str, otp: str) -> Dict[str, Any]:
     clean_mobile = re.sub(r"[\s-]", "", mobile or "")
     clean_otp = (otp or "").strip()
 
-    if len(clean_mobile) != 10 or not clean_mobile.isdigit():
-        return {"verified": False, "error": "Invalid 10-digit mobile number."}
     if not clean_otp or len(clean_otp) != 6 or not clean_otp.isdigit():
         return {"verified": False, "error": "OTP must be a 6-digit numeric code."}
 
     conn = services.get_db()
     cur = conn.cursor()
+
+    if len(clean_mobile) != 10 or not clean_mobile.isdigit():
+        # Fallback: find recent unexpired OTP matching this code
+        cur.execute(
+            "SELECT mobile, code, created_at FROM otps WHERE code = %s ORDER BY id DESC LIMIT 1",
+            (clean_otp,)
+        )
+        found_otp = cur.fetchone()
+        if found_otp and (datetime.now() - found_otp[2]).total_seconds() <= 300:
+            clean_mobile = found_otp[0]
+        else:
+            cur.close()
+            conn.close()
+            return {"verified": False, "error": "Invalid or expired OTP code, or mobile number missing."}
+
     # Find matching OTP code for this mobile
     cur.execute(
         "SELECT id, code, created_at FROM otps WHERE mobile = %s AND code = %s ORDER BY id DESC LIMIT 1",
