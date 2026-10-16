@@ -773,8 +773,29 @@
           OpenAI MCP Standard
         </span>
       </div>
-      <div class="mcp-guide-req">
-        {% if current_lang == 'hi' %}आवश्यकता: ChatGPT Plus / Team / Enterprise या डेवलपर मोड सक्षम{% else %}Requires: ChatGPT Plus, Team, or Developer Mode enabled{% endif %}
+      <div class="mcp-guide-req" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span>{% if current_lang == 'hi' %}आवश्यकता: ChatGPT Plus / Team / Enterprise या डेवलपर मोड सक्षम{% else %}Requires: ChatGPT Plus, Team, or Developer Mode enabled{% endif %}</span>
+        <span style="font-size:12px; background:#10a37f; color:#fff; font-weight:700; padding:2px 8px; border-radius:6px;">⚡ 1.5x Video Demo Below</span>
+      </div>
+
+      <!-- Embedded Video Demo for ChatGPT (1.5x speed) -->
+      <div style="margin:16px 0 24px; background:#0f172a; border-radius:12px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.3); border:1px solid #334155;">
+        <div style="padding:10px 16px; background:#1e293b; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:10px; height:10px; border-radius:50%; background:#ef4444; display:inline-block;"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:#f59e0b; display:inline-block;"></span>
+            <span style="width:10px; height:10px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+            <span style="font-size:12px; font-weight:600; color:#cbd5e1; margin-left:8px;">ChatGPT Developer Mode & MCP Walkthrough (1.5x Speed)</span>
+          </div>
+          <span style="font-size:11.5px; color:#94a3b8; font-family:monospace;">36s • 1080p HD</span>
+        </div>
+        <video controls style="width:100%; height:auto; display:block; max-height:480px; background:#000;" preload="metadata" poster="/static/favicon.ico">
+          <source src="/static/videos/chatgpt_mcp_demo.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div style="padding:8px 14px; background:#0f172a; font-size:12.5px; color:#94a3b8; text-align:center;">
+          🎬 Recorded demonstration showing ChatGPT Developer Settings, adding Sewa Setu Citizen MCP, and live tool testing.
+        </div>
       </div>
 
       <ol class="mcp-steps-list">
