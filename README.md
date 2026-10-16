@@ -2,7 +2,7 @@
 
 Department of Social Welfare, Government of Purvanchal. Maintained in-house.
 
-[![Tests](https://img.shields.io/badge/tests-63%20passed%2C%200%20failed-success.svg)](#automated-test-suite--evaluations)
+[![Tests](https://img.shields.io/badge/tests-64%20passed%2C%200%20failed-success.svg)](#automated-test-suite--evaluations)
 [![SLA](https://img.shields.io/badge/statutory%20SLA-15--day%20deemed%20approval-blue.svg)](#statutory-15-day-deemed-approval)
 [![Security](https://img.shields.io/badge/security-IDOR%20%26%20prompt%20injection%20shielded-brightgreen.svg)](#security--privacy)
 
@@ -45,7 +45,7 @@ ADMIN_PASSWORD=admin123 docker compose up --build
 
 ### 2. Full-Page Interactive Evaluation Console (`/evaluation`)
 - Independent, full-screen telemetry dashboard powered by **Chart.js** (no portal navbar interference).
-- **Interactive Bar Chart:** Test suite distribution and 100% pass rates across all 7 suites (63 tests).
+- **Interactive Bar Chart:** Test suite distribution and 100% pass rates across all 7 suites (64 tests).
 - **Interactive Donut Chart:** Live PostgreSQL application pipeline (`APPROVED`, `DEEMED_APPROVED`, `PENDING`, `REJECTED`).
 - **Real-Time Audit Stream:** Searchable, filterable client-side table showing the latest 30 tamper-evident database transactions.
 - **JSON Telemetry Export:** One-click download/clipboard copy of complete evaluation metrics.
@@ -71,18 +71,18 @@ ADMIN_PASSWORD=admin123 docker compose up --build
 
 ## 🧪 Automated Test Suite & Evaluations
 
-The project includes **63 automated test cases** covering every layer of the architecture:
+The project includes **64 automated test cases** covering every layer of the architecture:
 
 | Test Suite | Tests | Status | Focus Area |
 |---|:---:|:---:|---|
-| `test_shared_services.py` | 11 | PASSED | Validations, age thresholds (60+), advisory locks, application sequence generator |
+| `test_shared_services.py` | 10 | PASSED | Validations, age thresholds (60+), advisory locks, application sequence generator |
 | `test_citizen_mcp.py` | 6 | PASSED | Streamable HTTP transport, scheme discovery, OTP dispatch/verify, document upload |
-| `test_citizen_ux_privacy.py` | 10 | PASSED | Trilingual i18n, kiosk anti-cache headers, consecutive session purge, login by OTP |
+| `test_citizen_ux_privacy.py` | 11 | PASSED | Trilingual i18n, kiosk anti-cache headers, consecutive session purge, login by OTP |
 | `test_officer_mcp.py` | 13 | PASSED | Block-level tenancy isolation, review checklist, human confirmation guard, audit trail |
-| `test_automatic_approval.py` | 4 | PASSED | 15-day statutory SLA, SKIP LOCKED concurrency, DBT transfer idempotency |
-| `test_e2e_security_resilience.py` | 15 | PASSED | IDOR shields, path traversal, prompt injection filtering, SMS gateway failover |
+| `test_automatic_approval.py` | 8 | PASSED | 15-day statutory SLA, SKIP LOCKED concurrency, DBT transfer idempotency |
+| `test_e2e_security_resilience.py` | 12 | PASSED | IDOR shields, path traversal, prompt injection filtering, SMS gateway failover |
 | `test_final_acceptance.py` | 4 | PASSED | Complete multi-agent citizen journey through officer review & deemed approval |
-| **Total** | **63** | **100%** | **All Tests Passing (Duration: ~3.1s)** |
+| **Total** | **64** | **100%** | **All Tests Passing** |
 
 To run the full evaluation suite inside Docker:
 ```bash
