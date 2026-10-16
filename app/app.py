@@ -367,8 +367,45 @@ def form_step(step):
     if request.method == "POST":
         data = session.get("form_data", {})
         for k, v in request.form.items():
-            data[k] = v
+            data[k] = v.strip() if isinstance(v, str) else v
         session["form_data"] = data
+
+        # Step-specific strict validation: stop the applicant at that step until fixed!
+        if step == 1:
+            name = (data.get("applicant_name") or "").strip()
+            dob_str = (data.get("dob") or "").strip()
+            if not name:
+                flash("Full legal name is required.")
+                return render_template("form_step1.html", data=data, blocks=BLOCKS)
+            dob_val = parse_dob(dob_str)
+            if not dob_val:
+                flash("Invalid date of birth. Please enter date as DD/MM/YYYY (e.g. 15/04/1955).")
+                return render_template("form_step1.html", data=data, blocks=BLOCKS)
+            calc_age = age_on(dob_val, now_ist().date())
+            if calc_age < MIN_AGE:
+                flash(f"Applicant must be at least {MIN_AGE} years of age to be eligible for this pension (current age: {calc_age}).")
+                return render_template("form_step1.html", data=data, blocks=BLOCKS)
+
+        elif step == 2:
+            village = (data.get("village") or "").strip()
+            block = (data.get("block") or "").strip()
+            if not village:
+                flash("Village or residence name is required.")
+                return render_template("form_step2.html", data=data, blocks=BLOCKS)
+            if not block or block not in BLOCKS:
+                flash(f"Please select a valid administrative block ({', '.join(BLOCKS)}).")
+                return render_template("form_step2.html", data=data, blocks=BLOCKS)
+
+        elif step == 3:
+            bank_acc = re.sub(r"[\s-]", "", str(data.get("bank_account") or ""))
+            ifsc_code = re.sub(r"[\s-]", "", str(data.get("ifsc") or "")).upper()
+            if not bank_acc or not re.fullmatch(r"\d{9,18}", bank_acc):
+                flash("Invalid bank account number. It must be between 9 and 18 numerical digits without spaces or dashes.")
+                return render_template("form_step3.html", data=data, blocks=BLOCKS)
+            if not ifsc_code or not re.fullmatch(r"[A-Z]{4}0[A-Z0-9]{6}", ifsc_code):
+                flash("Invalid bank IFSC code. IFSC must be 11 characters (e.g. SBIN0003077).")
+                return render_template("form_step3.html", data=data, blocks=BLOCKS)
+
         if step < 3:
             return redirect(url_for("form_step", step=step + 1))
         return redirect(url_for("upload"))
