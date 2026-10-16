@@ -19,6 +19,11 @@
     <label for="otp">{{ t('otp_label') }} <span style="color:var(--danger)">*</span></label>
     <input type="text" id="otp" name="otp" maxlength="6" inputmode="numeric" style="max-width:200px; font-size:22px; letter-spacing:4px; text-align:center;" placeholder="123456" required autocomplete="one-time-code">
     <p class="note">{{ t('otp_sent_note') }}</p>
+    
+    <div style="margin-top:10px; padding:10px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px; font-size:13.5px; color:#1e40af; max-width:440px;">
+      📲 <strong>Tester / Evaluator Gateway:</strong><br>
+      View live dispatched OTPs in real-time at <a href="/__gateway/" target="_blank" style="color:#0284c7; font-weight:700; text-decoration:underline;">Live SMS & OTP Gateway Console ↗</a>
+    </div>
   </div>
 
   <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">

@@ -817,12 +817,12 @@
               </div>
               <div class="mcp-config-field">
                 <span class="mcp-config-label">Server URL:</span>
-                <span class="mcp-url-badge" id="citizen-mcp-url">https://sewasetu-ai.onrender.com/mcp/citizen</span>
+                <span class="mcp-url-badge" id="citizen-mcp-url">https://sewasetu-ai.onrender.com/mcp/citizen/</span>
                 <button type="button" class="copy-btn" onclick="copyMcpUrl('citizen-mcp-url', this)">📋 Copy</button>
               </div>
               <div class="mcp-config-field">
                 <span class="mcp-config-label">Authentication:</span>
-                <span style="color:#059669; font-weight:700;">No Authentication (Public Citizen Endpoint)</span>
+                <span style="color:#059669; font-weight:700;">No Authentication / None (Public Citizen Endpoint)</span>
               </div>
             </div>
           </div>
@@ -873,38 +873,76 @@
   <div class="mcp-tab-panel" id="tab-panel-claude" role="tabpanel">
     <div class="mcp-guide-card">
       <div class="mcp-guide-title">
-        <span>Claude Desktop & Anthropic MCP Integration</span>
+        <span>Claude Web & Desktop MCP Integration</span>
         <span style="font-size:12px; font-weight:700; background:#f3e8ff; color:#7e22ce; padding:3px 10px; border-radius:999px;">
-          Native Anthropic Protocol
+          Remote HTTP SSE / Stream
         </span>
       </div>
       <div class="mcp-guide-req">
-        {% if current_lang == 'hi' %}आवश्यकता: Claude Desktop ऐप (macOS / Windows){% else %}Requires: Claude Desktop App (macOS / Windows){% endif %}
+        {% if current_lang == 'hi' %}उपयोग करें: Claude.ai (Web Custom Connectors) अथवा Claude Desktop{% else %}Works with Claude.ai (Web Custom Connectors) & Claude Desktop{% endif %}
+      </div>
+
+      <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:8px; padding:12px 16px; margin:16px 0; font-size:14px; color:#0369a1;">
+        <strong>🚀 Option A: Claude.ai Web (Add Custom Connector)</strong>
       </div>
 
       <ol class="mcp-steps-list">
         <li class="mcp-step-row">
           <div class="mcp-step-index">1</div>
           <div class="mcp-step-content">
-            Open Claude Desktop and click on <strong>Settings &rarr; Developer</strong>.
+            Open <strong>Claude.ai</strong> &rarr; Click your profile icon &rarr; <strong>Settings</strong> &rarr; <strong>Connectors</strong> (or click <strong>Add custom connector</strong>).
           </div>
         </li>
         <li class="mcp-step-row">
           <div class="mcp-step-index">2</div>
           <div class="mcp-step-content">
-            Click <strong>Edit Config</strong> to open <code>claude_desktop_config.json</code>.
+            <div>Enter connector details:</div>
+            <div class="mcp-config-box">
+              <div class="mcp-config-field">
+                <span class="mcp-config-label">Connector Name:</span>
+                <strong>Sewa Setu Citizen MCP</strong>
+              </div>
+              <div class="mcp-config-field">
+                <span class="mcp-config-label">Server URL:</span>
+                <span class="mcp-url-badge" id="claude-citizen-mcp-url">https://sewasetu-ai.onrender.com/mcp/citizen/</span>
+                <button type="button" class="copy-btn" onclick="copyMcpUrl('claude-citizen-mcp-url', this)">📋 Copy</button>
+              </div>
+              <div class="mcp-config-field">
+                <span class="mcp-config-label">Authentication:</span>
+                <span style="color:#059669; font-weight:700;">Select "No sign-in" / "No authentication" (Click "Continue anyway" if prompted)</span>
+              </div>
+            </div>
           </div>
         </li>
         <li class="mcp-step-row">
           <div class="mcp-step-index">3</div>
           <div class="mcp-step-content">
-            Add the Sewa Setu MCP endpoint under <code>mcpServers</code>:
-            <div class="mcp-config-box" style="font-family:monospace; font-size:13px; line-height:1.6; background:#0f172a; color:#f8fafc; border:none;">
+            Click <strong>Add connector</strong>. In chat, click the connector toggle or use <code>@SewaSetu</code> to check eligibility, track RTPS application status, or trigger OTP verification.
+          </div>
+        </li>
+      </ol>
+
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; margin:20px 0 16px; font-size:14px; color:#334155;">
+        <strong>💻 Option B: Claude Desktop (<code>claude_desktop_config.json</code>)</strong>
+      </div>
+
+      <ol class="mcp-steps-list">
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">1</div>
+          <div class="mcp-step-content">
+            Open Claude Desktop &rarr; <strong>Settings &rarr; Developer</strong> &rarr; Click <strong>Edit Config</strong>.
+          </div>
+        </li>
+        <li class="mcp-step-row">
+          <div class="mcp-step-index">2</div>
+          <div class="mcp-step-content">
+            Add Sewa Setu under <code>mcpServers</code> (make sure to include the trailing slash <code>/</code>):
+            <div class="mcp-config-box" style="font-family:monospace; font-size:13px; line-height:1.6; background:#0f172a; color:#f8fafc; border:none; margin-top:8px;">
               <div style="color:#94a3b8;">// claude_desktop_config.json</div>
               <div>{</div>
               <div style="padding-left:16px;">"mcpServers": {</div>
               <div style="padding-left:32px; color:#38bdf8;">"sewasetu": {</div>
-              <div style="padding-left:48px;">"url": <span style="color:#a7f3d0;">"https://sewasetu-ai.onrender.com/mcp/citizen"</span></div>
+              <div style="padding-left:48px;">"url": <span style="color:#a7f3d0;">"https://sewasetu-ai.onrender.com/mcp/citizen/"</span></div>
               <div style="padding-left:32px; color:#38bdf8;">}</div>
               <div style="padding-left:16px;">}</div>
               <div>}</div>
@@ -912,9 +950,9 @@
           </div>
         </li>
         <li class="mcp-step-row">
-          <div class="mcp-step-index">4</div>
+          <div class="mcp-step-index">3</div>
           <div class="mcp-step-content">
-            Restart Claude Desktop. The hammer 🔨 icon will show active Sewa Setu tools (<code>check_pension_eligibility</code>, <code>track_application_status</code>, <code>send_otp</code>, <code>submit_pension_application</code>).
+            Restart Claude Desktop. The hammer 🔨 icon will illuminate active Sewa Setu tools (<code>check_pension_eligibility</code>, <code>track_application_status</code>, <code>send_otp</code>, <code>submit_pension_application</code>).
           </div>
         </li>
       </ol>
@@ -946,9 +984,13 @@
         <div class="mcp-config-field">
           <span class="mcp-config-label">Officer MCP URL:</span>
           <span class="mcp-url-badge" id="officer-mcp-url" style="background:#fef2f2; color:#991b1b; border-color:#fecaca;">
-            https://sewasetu-ai.onrender.com/mcp/officer
+            https://sewasetu-ai.onrender.com/mcp/officer/
           </span>
           <button type="button" class="copy-btn" onclick="copyMcpUrl('officer-mcp-url', this)">📋 Copy</button>
+        </div>
+        <div class="mcp-config-field">
+          <span class="mcp-config-label">Evaluator Login:</span>
+          <span style="font-size:13.5px; color:#1e293b;">Username: <strong>admin</strong> &bull; Password: <strong>admin123</strong> (<a href="/admin" target="_blank" style="color:var(--primary); font-weight:600; text-decoration:underline;">Open Officer Web Portal &rarr;</a>)</span>
         </div>
         <div class="mcp-config-field">
           <span class="mcp-config-label">Tools Included:</span>

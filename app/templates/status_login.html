@@ -86,10 +86,12 @@
       </div>
 
       {% if otp_sent %}
-      <div style="margin-bottom:24px; background:#f8fafc; padding:18px; border-radius:8px; border:1px solid var(--border-color);">
         <label for="status_otp_code">Enter 6-Digit OTP <span style="color:var(--danger)">*</span></label>
         <input type="text" id="status_otp_code" name="otp" maxlength="6" inputmode="numeric" placeholder="123456" required autocomplete="one-time-code" style="max-width:220px; font-size:22px; font-weight:700; letter-spacing:4px; text-align:center;">
         <p class="note" style="margin-top:8px;">A 6-digit code was sent to mobile number {{ mobile }}. Valid for 5 minutes.</p>
+        <div style="margin-top:10px; padding:8px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; font-size:13px; color:#1e40af;">
+          📲 <strong>Tester Helper:</strong> Check live incoming OTPs at <a href="/__gateway/" target="_blank" style="color:#0284c7; font-weight:700; text-decoration:underline;">Live SMS & OTP Gateway Console ↗</a>
+        </div>
       </div>
 
       <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">

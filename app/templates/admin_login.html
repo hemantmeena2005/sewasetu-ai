@@ -1,11 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Departmental Login</h2>
-<form method="post">
-  <label>Username</label>
-  <input type="text" name="username">
-  <label>Password</label>
-  <input type="password" name="password">
-  <p><button class="btn" type="submit">Login</button></p>
+<div style="margin-bottom:20px; padding:14px 18px; background:#eff6ff; border-left:4px solid #3b82f6; border-radius:0 8px 8px 0; font-size:14px; max-width:440px;">
+  🔑 <strong>Evaluator / Officer Credentials:</strong><br>
+  • <strong>Username:</strong> <code style="font-size:15px; font-weight:800; background:#ffffff; padding:2px 6px; border:1px solid #bfdbfe; border-radius:4px;">admin</code><br>
+  • <strong>Password:</strong> <code style="font-size:15px; font-weight:800; background:#ffffff; padding:2px 6px; border:1px solid #bfdbfe; border-radius:4px;">admin123</code> (or <code style="font-size:13px;">change-me-before-deploying</code>)
+</div>
+<form method="post" style="max-width:440px;">
+  <div style="margin-bottom:14px;">
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" value="admin" required autocomplete="username">
+  </div>
+  <div style="margin-bottom:20px;">
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" value="admin123" required autocomplete="current-password">
+  </div>
+  <p><button class="btn" type="submit">Login &rarr;</button></p>
 </form>
 {% endblock %}
