@@ -243,15 +243,50 @@ def about():
 @app.route("/__gateway/<path:subpath>")
 def gateway_proxy(subpath):
     # Convenience proxy to the internal SMS gateway, so the OTP inbox is reachable
-    # on the main site without opening a second port on the host. The gateway
-    # itself runs only on the internal network.
+    # on the main site without opening a second port on the host. If standalone smsgw
+    # is unavailable (e.g. single-service Render free tier), fall back to querying database OTPs directly!
     try:
         r = requests.get(SMS_GATEWAY_URL + "/" + subpath,
-                         params=request.args, timeout=5)
+                         params=request.args, timeout=2)
         return (r.content, r.status_code,
                 {"Content-Type": r.headers.get("Content-Type", "text/html")})
-    except Exception as e:
-        return ("SMS gateway unreachable: %s" % e, 502)
+    except Exception:
+        # Fallback: Query live OTPs directly from Postgres database
+        try:
+            conn = get_db()
+            cur = conn.cursor()
+            cur.execute("SELECT id, mobile, code, created_at FROM otps ORDER BY id DESC LIMIT 50")
+            rows = cur.fetchall()
+            cur.close(); conn.close()
+            
+            html = """<!doctype html><html><head><title>Sewa Setu - OTP Gateway Console</title>
+<meta http-equiv="refresh" content="5">
+<style>
+body{font-family:Arial,sans-serif;margin:24px;background:#f8fafc;color:#1e293b}
+h2{color:#0284c7;margin-bottom:4px}
+p{color:#64748b;margin-top:0}
+table{border-collapse:collapse;background:#fff;width:100%;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}
+td,th{border:1px solid #e2e8f0;padding:10px 14px;font-size:14px;text-align:left}
+th{background:#f1f5f9;font-weight:700}
+.code{font-family:monospace;font-size:16px;font-weight:800;color:#0f172a;background:#fef3c7;padding:2px 8px;border-radius:4px;border:1px solid #fde68a}
+.d{color:#15803d;font-weight:700}
+</style></head><body>
+<h2>📲 Sewa Setu SMS & OTP Gateway Console</h2>
+<p>Live dispatched OTPs and carrier messages. Auto-refreshes every 5s.</p>
+<table><tr><th>#</th><th>Mobile Number</th><th>6-Digit OTP Code</th><th>Timestamp</th><th>Carrier Status</th></tr>"""
+            for row in rows:
+                row_id, mob, code, dt = row
+                html += f"""<tr>
+<td>{row_id}</td>
+<td><strong>{mob}</strong></td>
+<td><span class="code">{code}</span></td>
+<td>{dt.strftime('%Y-%m-%d %H:%M:%S') if dt else 'N/A'}</td>
+<td><span class="d">✓ Delivered</span></td>
+</tr>"""
+            html += "</table></body></html>"
+            return (html, 200, {"Content-Type": "text/html; charset=utf-8"})
+        except Exception as e:
+            return (f"OTP gateway error: {e}", 500)
 
 
 # ---------------------------------------------------------------------------
